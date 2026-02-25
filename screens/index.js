@@ -7,3 +7,4 @@ export { default as RawMaterialQCScreen } from './RawMaterialQCScreen/RawMateria
 export { default as CookedBatchQCScreen } from './CookedBatchQCScreen/CookedBatchQCScreen';
 export { default as ConfirmDeliveryScreen } from './ConfirmDeliveryScreen/ConfirmDeliveryScreen';
 export { default as FileDisputeScreen } from './FileDisputeScreen/FileDisputeScreen';
+export { default as SettingsScreen } from './SettingsScreen/SettingsScreen';

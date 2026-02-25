@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { MenuButton, Button } from '../../components';
-import styles from './DashboardScreen.styles';
+import { useTheme } from '../../context/ThemeContext';
+import { MenuButton } from '../../components';
 
 const ROLE_NAMES = {
   0: 'Admin',
@@ -12,7 +12,14 @@ const ROLE_NAMES = {
   4: 'Store Staff',
 };
 
-export default function DashboardScreen({ user, onLogout, onNavigate }) {
+export default function DashboardScreen({ user, onNavigate }) {
+  const { theme } = useTheme();
+
+  // Safety check for theme
+  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
+    return null;
+  }
+
   const renderMenuByRole = () => {
     switch (user.role_id) {
       case 4:
@@ -140,32 +147,74 @@ export default function DashboardScreen({ user, onLogout, onNavigate }) {
         );
 
       default:
-        return <Text style={styles.errorText}>Invalid role</Text>;
+        return (
+          <Text style={[styles.errorText, { color: theme.colors.danger }]}>
+            Invalid role
+          </Text>
+        );
     }
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>CKS System</Text>
-            <Text style={styles.subtitle}>
-              {ROLE_NAMES[user.role_id]} Dashboard
-            </Text>
-            <Text style={styles.email}>{user.email}</Text>
-          </View>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={theme.colors.statusBar} />
+      
+      <View style={[styles.header, { 
+        backgroundColor: theme.colors.surface,
+        borderBottomColor: theme.colors.border.light,
+      }]}>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+          CKS System
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+          {ROLE_NAMES[user.role_id]} Dashboard
+        </Text>
+      </View>
 
-          <View style={styles.menuSection}>
-            {renderMenuByRole()}
-          </View>
-
-          <View style={styles.actions}>
-            <Button title="Logout" onPress={onLogout} variant="danger" />
-          </View>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.menuSection}>
+          {renderMenuByRole()}
         </View>
       </ScrollView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+  },
+  menuSection: {
+    marginTop: 10,
+  },
+  errorText: {
+    textAlign: 'center',
+    fontSize: 16,
+    marginTop: 20,
+  },
+});

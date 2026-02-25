@@ -1,12 +1,10 @@
-class Storage {
-  constructor() {
-    this.storage = {};
-  }
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+class Storage {
   async setItem(key, value) {
     try {
       const jsonValue = JSON.stringify(value);
-      this.storage[key] = jsonValue;
+      await AsyncStorage.setItem(key, jsonValue);
       return true;
     } catch (error) {
       console.error('Storage setItem error:', error);
@@ -16,7 +14,7 @@ class Storage {
 
   async getItem(key) {
     try {
-      const jsonValue = this.storage[key];
+      const jsonValue = await AsyncStorage.getItem(key);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
       console.error('Storage getItem error:', error);
@@ -26,7 +24,7 @@ class Storage {
 
   async removeItem(key) {
     try {
-      delete this.storage[key];
+      await AsyncStorage.removeItem(key);
       return true;
     } catch (error) {
       console.error('Storage removeItem error:', error);
@@ -36,7 +34,7 @@ class Storage {
 
   async clear() {
     try {
-      this.storage = {};
+      await AsyncStorage.clear();
       return true;
     } catch (error) {
       console.error('Storage clear error:', error);

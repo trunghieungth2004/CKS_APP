@@ -8,12 +8,20 @@ Professional React Native mobile application for the CKS system.
 CKS_APP/
 ├── components/          # Reusable UI components
 │   ├── Button/         # Button component with styles
+│   ├── Card/           # Card component with styles
 │   ├── Input/          # Input component with styles
+│   ├── MenuButton/     # Menu button component with styles
 │   └── index.js        # Components barrel export
 │
 ├── screens/            # App screens
 │   ├── LoginScreen/    # Login screen with styles
-│   ├── HomeScreen/     # Home screen with styles
+│   ├── DashboardScreen/ # Dashboard screen with styles
+│   ├── CreateOrderScreen/ # Create order screen with styles
+│   ├── MyOrdersScreen/  # My orders screen with styles
+│   ├── RawMaterialQCScreen/ # Raw material QC screen with styles
+│   ├── CookedBatchQCScreen/ # Cooked batch QC screen with styles
+│   ├── ConfirmDeliveryScreen/ # Confirm delivery screen with styles
+│   ├── FileDisputeScreen/ # File dispute screen with styles
 │   └── index.js        # Screens barrel export
 │
 ├── services/           # API services
@@ -22,14 +30,14 @@ CKS_APP/
 │   └── index.js        # Services barrel export
 │
 ├── utils/              # Utility functions
-│   ├── storage.js      # Storage helper
+│   ├── storage.js      # Persistent storage using AsyncStorage
 │   └── validators.js   # Validation functions
 │
 ├── styles/             # Shared styles
 │   └── theme.js        # Theme configuration (colors, spacing, etc.)
 │
-├── constants/          # App constants
-│   └── config.js       # API URLs, test credentials
+├── config/             # App configuration
+│   └── constants.js    # API URLs, endpoints, app constants
 │
 ├── App.js              # Main app component
 ├── index.js            # App entry point
@@ -43,16 +51,22 @@ CKS_APP/
 - ✅ Separation of concerns (components, screens, services, utils)
 - ✅ Each component has its own style file
 - ✅ Centralized theme management
-- ✅ Reusable components (Button, Input)
-- ✅ API service layer
+- ✅ Reusable components (Button, Input, Card, MenuButton)
+- ✅ API service layer with centralized configuration
 - ✅ Form validation
 - ✅ Authentication flow
-- ✅ Persistent login (storage)
+- ✅ Persistent login using AsyncStorage
 - ✅ Barrel exports for clean imports
+- ✅ Role-based dashboard navigation
+- ✅ Complete order management workflow
 
 ## Running the App
 
 ```bash
+# Install dependencies
+npm install
+
+# Start the development server
 npm start
 # or
 expo start
@@ -60,9 +74,17 @@ expo start
 
 ## API Configuration
 
-API base URL is configured in `constants/config.js`:
+API configuration is centralized in `config/constants.js`:
 ```javascript
 export const API_BASE_URL = 'https://app-thvt3ndwfq-uc.a.run.app';
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/api/auth/login',
+    VERIFY: '/api/auth/verify',
+    REGISTER: '/api/auth/register',
+  },
+  // ... more endpoints
+};
 ```
 
 ## Test Credentials

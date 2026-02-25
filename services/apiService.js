@@ -1,6 +1,8 @@
+import { API_BASE_URL } from '../config/constants';
+
 class ApiService {
   constructor() {
-    this.baseURL = 'https://app-thvt3ndwfq-uc.a.run.app';
+    this.baseURL = API_BASE_URL;
     this.token = null;
   }
 

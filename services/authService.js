@@ -1,7 +1,9 @@
+import { API_BASE_URL, API_ENDPOINTS } from '../config/constants';
+
 class AuthService {
   async login(email, password) {
     try {
-      const response = await fetch('https://app-thvt3ndwfq-uc.a.run.app/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +46,7 @@ class AuthService {
 
   async verifyToken(token) {
     try {
-      const response = await fetch('https://app-thvt3ndwfq-uc.a.run.app/api/auth/verify', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.VERIFY}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +70,7 @@ class AuthService {
 
   async register(userData, token) {
     try {
-      const response = await fetch('https://app-thvt3ndwfq-uc.a.run.app/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REGISTER}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

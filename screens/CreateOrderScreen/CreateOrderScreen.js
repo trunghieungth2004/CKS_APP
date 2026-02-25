@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
+import { View, Text, ScrollView, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '../../context/ThemeContext';
 import { Button, Input, Card } from '../../components';
 import apiService from '../../services/apiService';
-import styles from './CreateOrderScreen.styles';
 
 export default function CreateOrderScreen({ onBack }) {
+  const { theme } = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState('');
   const [notes, setNotes] = useState('');
   const [orderItems, setOrderItems] = useState([]);
+
+  // Safety check for theme
+  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
+    return null;
+  }
 
   useEffect(() => {
     loadProducts();
@@ -83,15 +89,26 @@ export default function CreateOrderScreen({ onBack }) {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={theme.colors.statusBar} />
+      
+      <View style={[styles.header, { 
+        backgroundColor: theme.colors.surface,
+        borderBottomColor: theme.colors.border.light,
+      }]}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+          Create New Order
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+          Cutoff: 6:00 PM Daily
+        </Text>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Create New Order</Text>
-            <Text style={styles.subtitle}>Cutoff: 6:00 PM Daily</Text>
-          </View>
-
           <Card title="Order Details">
             <Input
               label="Delivery Date"
@@ -109,13 +126,19 @@ export default function CreateOrderScreen({ onBack }) {
 
           <Card title="Order Items">
             {loading ? (
-              <Text style={styles.loadingText}>Loading products...</Text>
+              <Text style={[styles.loadingText, { color: theme.colors.text.secondary }]}>
+                Loading products...
+              </Text>
             ) : (
               orderItems.map(item => (
                 <View key={item.product_id} style={styles.productRow}>
                   <View style={styles.productInfo}>
-                    <Text style={styles.productName}>{item.product_name}</Text>
-                    <Text style={styles.productPrice}>₱{item.unit_price}</Text>
+                    <Text style={[styles.productName, { color: theme.colors.text.primary }]}>
+                      {item.product_name}
+                    </Text>
+                    <Text style={[styles.productPrice, { color: theme.colors.text.secondary }]}>
+                      ₱{item.unit_price}
+                    </Text>
                   </View>
                   <Input
                     placeholder="Qty (kg)"
@@ -143,3 +166,66 @@ export default function CreateOrderScreen({ onBack }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    paddingTop: 60,
+    paddingBottom: 15,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    marginBottom: 10,
+  },
+  backText: {
+    fontSize: 17,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 15,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+  },
+  content: {
+    flex: 1,
+  },
+  loadingText: {
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  productRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingBottom: 15,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E5EA',
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 14,
+  },
+  quantityInput: {
+    width: 120,
+    marginBottom: 0,
+  },
+  actions: {
+    marginTop: 20,
+  },
+});
