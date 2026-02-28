@@ -1,5 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Button as PaperButton } from 'react-native-paper';
 import { useTheme } from '../../context/ThemeContext';
 
 const Button = ({ 
@@ -10,75 +11,60 @@ const Button = ({
   variant = 'primary', 
   style,
   textStyle,
+  icon,
+  compact = false,
 }) => {
-  const { theme } = useTheme();
+  const { paperTheme } = useTheme();
   const isDisabled = disabled || loading;
 
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.shadows || !theme.spacing || !theme.borderRadius) {
-    return null;
-  }
-
-  const getButtonStyle = () => {
-    const baseStyle = {
-      backgroundColor: theme.colors[variant] || theme.colors.primary,
-      borderRadius: theme.borderRadius.md,
-      padding: theme.spacing.md + 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: theme.spacing.sm + 2,
-      ...theme.shadows.medium,
-    };
-
-    if (variant === 'outline') {
-      return {
-        ...baseStyle,
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        borderColor: theme.colors.primary,
-      };
+  const getModeAndColors = () => {
+    switch (variant) {
+      case 'primary':
+        return { mode: 'contained', buttonColor: paperTheme.colors.primary };
+      case 'secondary':
+        return { mode: 'contained', buttonColor: paperTheme.colors.secondary };
+      case 'success':
+        return { mode: 'contained', buttonColor: paperTheme.colors.tertiary };
+      case 'outline':
+        return { mode: 'outlined', buttonColor: undefined };
+      case 'text':
+        return { mode: 'text', buttonColor: undefined };
+      default:
+        return { mode: 'contained', buttonColor: paperTheme.colors.primary };
     }
-
-    if (isDisabled) {
-      return {
-        ...baseStyle,
-        backgroundColor: theme.colors.text.disabled,
-      };
-    }
-
-    return baseStyle;
   };
 
-  const getTextColor = () => {
-    if (variant === 'outline') return theme.colors.primary;
-    return '#FFFFFF';
-  };
+  const { mode, buttonColor } = getModeAndColors();
 
   return (
-    <TouchableOpacity
-      style={[getButtonStyle(), style]}
+    <PaperButton
+      mode={mode}
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.7}
+      loading={loading}
+      style={[styles.button, style]}
+      contentStyle={[styles.content, compact && styles.compactContent]}
+      labelStyle={[styles.label, textStyle]}
+      buttonColor={buttonColor}
+      icon={icon}
     >
-      {loading ? (
-        <ActivityIndicator color={getTextColor()} />
-      ) : (
-        <Text style={[
-          styles.buttonText,
-          { color: getTextColor() },
-          textStyle
-        ]}>
-          {title}
-        </Text>
-      )}
-    </TouchableOpacity>
+      {title}
+    </PaperButton>
   );
 };
 
 const styles = StyleSheet.create({
-  buttonText: {
-    fontSize: 18,
+  button: {
+    marginVertical: 4,
+  },
+  content: {
+    paddingVertical: 6,
+  },
+  compactContent: {
+    paddingVertical: 2,
+  },
+  label: {
+    fontSize: 16,
     fontWeight: '600',
   },
 });

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, StyleSheet } from 'react-native';
+import { View, ScrollView, RefreshControl, Alert, StyleSheet } from 'react-native';
+import { Text, Appbar, Chip, ActivityIndicator, Surface } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
-import { Button, Card } from '../../components';
+import { Card } from '../../components';
 import apiService from '../../services/apiService';
 
 const STATUS_COLORS = {
@@ -24,15 +25,11 @@ const STATUS_NAMES = {
 };
 
 export default function MyOrdersScreen({ onBack, onNavigate }) {
-  const { theme } = useTheme();
+  const { theme, paperTheme } = useTheme();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
-    return null;
-  }
 
   useEffect(() => {
     loadOrders();
@@ -56,20 +53,13 @@ export default function MyOrdersScreen({ onBack, onNavigate }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <StatusBar style={theme.colors.statusBar} />
       
-      <View style={[styles.header, { 
-        backgroundColor: theme.colors.surface,
-        borderBottomColor: theme.colors.border.light,
-      }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-          My Orders
-        </Text>
-      </View>
+      <Appbar.Header elevated>
+        <Appbar.BackAction onPress={onBack} />
+        <Appbar.Content title="My Orders" />
+      </Appbar.Header>
       
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -77,61 +67,59 @@ export default function MyOrdersScreen({ onBack, onNavigate }) {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
+            colors={[paperTheme.colors.primary]}
           />
         }
       >
         {loading ? (
-          <Text style={[styles.loadingText, { color: theme.colors.text.secondary }]}>
-            Loading orders...
-          </Text>
+          <View style={styles.centerContent}>
+            <ActivityIndicator size="large" />
+            <Text variant="bodyLarge" style={styles.loadingText}>Loading orders...</Text>
+          </View>
         ) : orders.length === 0 ? (
-          <Text style={[styles.emptyText, { color: theme.colors.text.secondary }]}>
-            No orders found
-          </Text>
+          <View style={styles.centerContent}>
+            <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+              No orders found
+            </Text>
+          </View>
         ) : (
           orders.map(order => (
-            <TouchableOpacity
+            <Card
               key={order.order_id}
               onPress={() => onNavigate('OrderDetail', { orderId: order.order_id })}
-              activeOpacity={0.7}
+              elevation={2}
             >
-              <Card>
-                <View style={styles.orderHeader}>
-                  <Text style={[styles.orderId, { color: theme.colors.text.primary }]}>
-                    {order.order_id}
-                  </Text>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: STATUS_COLORS[order.order_status_id] },
-                    ]}
-                  >
-                    <Text style={styles.statusText}>
-                      {STATUS_NAMES[order.order_status_id]}
-                    </Text>
-                  </View>
-                </View>
+              <View style={styles.orderHeader}>
+                <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
+                  {order.order_id}
+                </Text>
+                <Chip
+                  mode="flat"
+                  style={{ backgroundColor: STATUS_COLORS[order.order_status_id] }}
+                  textStyle={styles.statusText}
+                >
+                  {STATUS_NAMES[order.order_status_id]}
+                </Chip>
+              </View>
 
-                <View style={styles.orderInfo}>
-                  <Text style={[styles.infoLabel, { color: theme.colors.text.secondary }]}>
-                    Delivery Date:
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
-                    {new Date(order.delivery_date).toLocaleDateString()}
-                  </Text>
-                </View>
+              <View style={styles.orderInfo}>
+                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                  Delivery Date:
+                </Text>
+                <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
+                  {new Date(order.delivery_date).toLocaleDateString()}
+                </Text>
+              </View>
 
-                <View style={styles.orderInfo}>
-                  <Text style={[styles.infoLabel, { color: theme.colors.text.secondary }]}>
-                    Items:
-                  </Text>
-                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
-                    {order.items?.length || 0}
-                  </Text>
-                </View>
-              </Card>
-            </TouchableOpacity>
+              <View style={styles.orderInfo}>
+                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                  Items:
+                </Text>
+                <Text variant="bodyMedium" style={{ fontWeight: '500' }}>
+                  {order.items?.length || 0}
+                </Text>
+              </View>
+            </Card>
           ))
         )}
       </ScrollView>
@@ -143,74 +131,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    marginBottom: 10,
-  },
-  backText: {
-    fontSize: 17,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
   scrollContent: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 120,
   },
-  loadingText: {
-    textAlign: 'center',
-    fontSize: 16,
+  centerContent: {
+    alignItems: 'center',
     marginTop: 40,
   },
-  emptyText: {
-    textAlign: 'center',
-    fontSize: 16,
-    marginTop: 40,
+  loadingText: {
+    marginTop: 16,
   },
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
-  },
-  orderId: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    marginBottom: 12,
   },
   statusText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   orderInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
-  },
-  infoLabel: {
-    fontSize: 15,
-  },
-  infoValue: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    paddingBottom: 100,
   },
 });

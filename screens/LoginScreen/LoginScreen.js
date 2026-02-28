@@ -1,30 +1,29 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   KeyboardAvoidingView,
   Platform,
   Alert,
   ScrollView,
   StyleSheet,
-  Animated,
 } from 'react-native';
+import { Text, Surface, Divider, TextInput } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
-
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import authService from '../../services/authService';
 
 export default function LoginScreen({ onLoginSuccess }) {
-  const { theme } = useTheme();
+  const { theme, paperTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   // Safety check for theme
-  if (!theme || !theme.colors || !theme.shadows) {
+  if (!paperTheme || !paperTheme.colors) {
     return null;
   }
 
@@ -69,24 +68,29 @@ export default function LoginScreen({ onLoginSuccess }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <StatusBar style={theme.colors.statusBar} />
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+      <StatusBar style={paperTheme.dark ? 'light' : 'dark'} />
       
-      {/* Modern gradient-like header */}
-      <View style={[styles.headerSection, { backgroundColor: theme.colors.primary }]}>
+      {/* Material Design 3 Header with gradient-like effect */}
+      <Surface style={[styles.headerSection, { backgroundColor: paperTheme.colors.primary }]} elevation={0}>
         <View style={styles.headerContent}>
           <View style={styles.logoContainer}>
-            <View style={[styles.logoCircle, { 
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            }]}>
-              <Text style={styles.logoText}>CKS</Text>
-            </View>
+            <Surface style={[styles.logoCircle, { 
+              backgroundColor: paperTheme.colors.primaryContainer,
+            }]} elevation={3}>
+              <Text variant="displayMedium" style={{ color: paperTheme.colors.onPrimaryContainer, fontWeight: 'bold' }}>
+                C
+              </Text>
+            </Surface>
           </View>
-          <Text style={styles.appTitle}>CKS System</Text>
-          <Text style={styles.appTagline}>Supply Chain Management</Text>
+          <Text variant="headlineLarge" style={[styles.appTitle, { color: paperTheme.colors.onPrimary }]}>
+            CKS System
+          </Text>
+          <Text variant="labelLarge" style={[styles.appTagline, { color: paperTheme.colors.onPrimary }]}>
+            Supply Chain Management
+          </Text>
         </View>
-      </View>
+      </Surface>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -97,14 +101,11 @@ export default function LoginScreen({ onLoginSuccess }) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.formCard, { 
-            backgroundColor: theme.colors.card,
-            ...theme.shadows.medium,
-          }]}>
-            <Text style={[styles.welcomeText, { color: theme.colors.text.primary }]}>
+          <Surface style={styles.formCard} elevation={2}>
+            <Text variant="headlineSmall" style={[styles.welcomeText, { color: paperTheme.colors.onSurface }]}>
               Welcome Back
             </Text>
-            <Text style={[styles.loginSubtext, { color: theme.colors.text.secondary }]}>
+            <Text variant="bodyLarge" style={[styles.loginSubtext, { color: paperTheme.colors.onSurfaceVariant }]}>
               Sign in to continue
             </Text>
 
@@ -118,6 +119,7 @@ export default function LoginScreen({ onLoginSuccess }) {
                 editable={!loading}
                 error={errors.email}
                 autoCapitalize="none"
+                left={<TextInput.Icon icon="email" />}
               />
 
               <Input
@@ -125,9 +127,11 @@ export default function LoginScreen({ onLoginSuccess }) {
                 placeholder="Enter your password"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
                 editable={!loading}
                 error={errors.password}
+                left={<TextInput.Icon icon="lock" />}
+                right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
               />
 
               <Button
@@ -139,16 +143,18 @@ export default function LoginScreen({ onLoginSuccess }) {
               />
             </View>
 
+            <Divider style={styles.divider} />
+
             <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: theme.colors.text.tertiary }]}>
+              <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
                 Need help? Contact your administrator
               </Text>
             </View>
-          </View>
+          </Surface>
 
           <View style={styles.versionInfo}>
-            <Text style={[styles.versionText, { color: theme.colors.text.tertiary }]}>
-              Version 1.0.0
+            <Text variant="labelSmall" style={{ color: paperTheme.colors.outline }}>
+              Version 1.0.0 • Material Design
             </Text>
           </View>
         </ScrollView>
@@ -173,30 +179,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoText: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-  },
   appTitle: {
-    fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 6,
+    marginBottom: 8,
     letterSpacing: 0.5,
   },
   appTagline: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     textTransform: 'uppercase',
   },
   formSection: {
@@ -208,42 +203,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   formCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    padding: 30,
+    borderRadius: 28,
+    padding: 24,
     marginBottom: 20,
   },
   welcomeText: {
-    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   loginSubtext: {
-    fontSize: 15,
-    marginBottom: 30,
+    marginBottom: 24,
   },
   form: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   loginButton: {
-    marginTop: 10,
+    marginTop: 8,
+  },
+  divider: {
+    marginVertical: 16,
   },
   footer: {
     alignItems: 'center',
-    paddingTop: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E5EA',
-  },
-  footerText: {
-    fontSize: 13,
+    paddingTop: 8,
   },
   versionInfo: {
     alignItems: 'center',
     paddingVertical: 20,
-  },
-  versionText: {
-    fontSize: 12,
   },
 });

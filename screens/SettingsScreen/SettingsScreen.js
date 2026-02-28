@@ -1,16 +1,11 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, ScrollView, Alert, StyleSheet } from 'react-native';
+import { Text, Appbar, List, Switch, Divider, Button as PaperButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
-import styles from './SettingsScreen.styles';
 
 export default function SettingsScreen({ user, onLogout }) {
-  const { theme, isDarkMode, toggleTheme } = useTheme();
-
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border) {
-    return null;
-  }
+  const { theme, paperTheme, isDarkMode, useMaterialYou, toggleTheme, toggleMaterialYou } = useTheme();
 
   const handleLogout = () => {
     Alert.alert(
@@ -27,108 +22,79 @@ export default function SettingsScreen({ user, onLogout }) {
     );
   };
 
-  const SettingRow = ({ label, value, onPress, showArrow = false }) => (
-    <TouchableOpacity 
-      style={[styles.settingRow, { 
-        backgroundColor: theme.colors.surface,
-        borderBottomColor: theme.colors.border.light,
-      }]}
-      onPress={onPress}
-      disabled={!onPress}
-      activeOpacity={onPress ? 0.7 : 1}
-    >
-      <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>
-        {label}
-      </Text>
-      <View style={styles.settingValue}>
-        {typeof value === 'boolean' ? (
-          <Switch
-            value={value}
-            onValueChange={onPress}
-            trackColor={{ 
-              false: theme.colors.border.medium, 
-              true: theme.colors.primary 
-            }}
-            thumbColor="#fff"
-          />
-        ) : (
-          <>
-            {value && (
-              <Text style={[styles.valueText, { color: theme.colors.text.secondary }]}>
-                {value}
-              </Text>
-            )}
-            {showArrow && (
-              <Text style={[styles.arrow, { color: theme.colors.text.tertiary }]}>›</Text>
-            )}
-          </>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-
-  const SectionHeader = ({ title }) => (
-    <View style={styles.sectionHeader}>
-      <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
-        {title}
-      </Text>
-    </View>
-  );
-
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <StatusBar style={theme.colors.statusBar} />
       
-      <View style={[styles.header, { 
-        backgroundColor: theme.colors.surface,
-        borderBottomColor: theme.colors.border.light,
-      }]}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text.primary }]}>
-          Settings
-        </Text>
-      </View>
+      <Appbar.Header elevated mode="center-aligned">
+        <Appbar.Content title="Settings" />
+      </Appbar.Header>
 
       <ScrollView style={styles.scrollContent}>
-        <SectionHeader title="ACCOUNT" />
-        <View style={styles.section}>
-          <SettingRow 
-            label="Email" 
-            value={user?.email || 'Not logged in'}
+        <List.Section>
+          <List.Subheader>Account</List.Subheader>
+          <List.Item
+            title="Email"
+            description={user?.email || 'Not logged in'}
+            left={props => <List.Icon {...props} icon="email" />}
           />
-          <SettingRow 
-            label="Role" 
-            value={getRoleName(user?.role_id)}
+          <List.Item
+            title="Role"
+            description={getRoleName(user?.role_id)}
+            left={props => <List.Icon {...props} icon="account-badge" />}
           />
-        </View>
+        </List.Section>
 
-        <SectionHeader title="APPEARANCE" />
-        <View style={styles.section}>
-          <SettingRow 
-            label="Dark Mode" 
-            value={isDarkMode}
-            onPress={toggleTheme}
-          />
-        </View>
+        <Divider />
 
-        <SectionHeader title="ACCOUNT ACTIONS" />
-        <View style={styles.section}>
-          <TouchableOpacity 
-            style={[styles.logoutButton, {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.danger,
-            }]}
-            onPress={handleLogout}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.logoutText, { color: theme.colors.danger }]}>
+        <List.Section>
+          <List.Subheader>Appearance</List.Subheader>
+          <List.Item
+            title="Dark Mode"
+            description={isDarkMode ? 'Enabled' : 'Disabled'}
+            left={props => <List.Icon {...props} icon="theme-light-dark" />}
+            right={() => (
+              <Switch
+                value={isDarkMode}
+                onValueChange={toggleTheme}
+                color={paperTheme.colors.primary}
+              />
+            )}
+          />
+          <List.Item
+            title="Material You"
+            description={useMaterialYou ? 'Dynamic colors enabled' : 'Standard colors'}
+            left={props => <List.Icon {...props} icon="palette" />}
+            right={() => (
+              <Switch
+                value={useMaterialYou}
+                onValueChange={toggleMaterialYou}
+                color={paperTheme.colors.primary}
+              />
+            )}
+          />
+        </List.Section>
+
+        <Divider />
+
+        <List.Section>
+          <List.Subheader>Account Actions</List.Subheader>
+          <View style={styles.logoutContainer}>
+            <PaperButton
+              mode="contained"
+              onPress={handleLogout}
+              buttonColor={paperTheme.colors.error}
+              icon="logout"
+              style={styles.logoutButton}
+            >
               Logout
-            </Text>
-          </TouchableOpacity>
-        </View>
+            </PaperButton>
+          </View>
+        </List.Section>
 
         <View style={styles.appInfo}>
-          <Text style={[styles.appInfoText, { color: theme.colors.text.tertiary }]}>
-            CKS App v1.0.0
+          <Text variant="bodySmall" style={{ color: paperTheme.colors.outline }}>
+            CKS App v1.0.0 • Material Design
           </Text>
         </View>
       </ScrollView>
@@ -146,3 +112,24 @@ const getRoleName = (roleId) => {
   };
   return roles[roleId] || 'Unknown';
 };
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  logoutContainer: {
+    padding: 16,
+  },
+  logoutButton: {
+    marginVertical: 8,
+  },
+  appInfo: {
+    alignItems: 'center',
+    padding: 24,
+    marginTop: 16,
+  },
+});

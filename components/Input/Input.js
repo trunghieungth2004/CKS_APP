@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { TextInput, HelperText } from 'react-native-paper';
 import { useTheme } from '../../context/ThemeContext';
 
 const Input = ({
@@ -15,49 +16,37 @@ const Input = ({
   error,
   style,
   inputStyle,
+  multiline = false,
+  numberOfLines = 1,
+  right,
+  left,
 }) => {
-  const { theme } = useTheme();
-
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
-    return null;
-  }
+  const { paperTheme } = useTheme();
 
   return (
     <View style={[styles.container, style]}>
-      {label && (
-        <Text style={[styles.label, { color: theme.colors.text.primary }]}>
-          {label}
-        </Text>
-      )}
       <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: theme.colors.surface,
-            borderColor: error ? theme.colors.danger : theme.colors.border.medium,
-            color: theme.colors.text.primary,
-          },
-          !editable && {
-            backgroundColor: theme.colors.surfaceVariant,
-            color: theme.colors.text.tertiary,
-          },
-          inputStyle,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor={theme.colors.text.tertiary}
+        label={label}
         value={value}
         onChangeText={onChangeText}
+        placeholder={placeholder}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
         editable={editable}
+        mode="outlined"
+        error={!!error}
+        multiline={multiline}
+        numberOfLines={numberOfLines}
+        style={[styles.input, inputStyle]}
+        right={right}
+        left={left}
       />
       {error && (
-        <Text style={[styles.errorText, { color: theme.colors.danger }]}>
+        <HelperText type="error" visible={!!error}>
           {error}
-        </Text>
+        </HelperText>
       )}
     </View>
   );
@@ -65,22 +54,10 @@ const Input = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 15,
-    fontSize: 16,
-  },
-  errorText: {
-    fontSize: 12,
-    marginTop: 6,
+    backgroundColor: 'transparent',
   },
 });
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { PaperProvider, Text, Surface, Appbar, ActivityIndicator } from 'react-native-paper';
 import {
   LoginScreen,
   DashboardScreen,
@@ -18,25 +19,26 @@ import storage from './utils/storage';
 
 // Placeholder component for unimplemented screens
 const PlaceholderScreen = ({ screenName, onBack }) => {
-  const { theme } = useTheme();
-  
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.text) {
-    return null;
-  }
+  const { theme, paperTheme } = useTheme();
   
   return (
-    <View style={[styles.placeholderContainer, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.placeholderContent, { backgroundColor: theme.colors.card }]}>
-        <Text style={[styles.placeholderTitle, { color: theme.colors.text.primary }]}>
-          {screenName}
-        </Text>
-        <Text style={[styles.placeholderSubtitle, { color: theme.colors.text.secondary }]}>
-          Coming Soon
-        </Text>
-        <View style={styles.placeholderButton}>
-          <Button title="Back to Library" onPress={onBack} variant="primary" />
-        </View>
+    <View style={[styles.placeholderContainer, { backgroundColor: paperTheme.colors.background }]}>
+      <Appbar.Header elevated>
+        <Appbar.BackAction onPress={onBack} />
+        <Appbar.Content title={screenName} />
+      </Appbar.Header>
+      <View style={styles.placeholderContent}>
+        <Surface style={styles.comingSoonCard} elevation={2}>
+          <Text variant="headlineMedium" style={[styles.placeholderTitle, { color: paperTheme.colors.onSurface }]}>
+            {screenName}
+          </Text>
+          <Text variant="bodyLarge" style={[styles.placeholderSubtitle, { color: paperTheme.colors.onSurfaceVariant }]}>
+            Coming Soon
+          </Text>
+          <View style={styles.placeholderButton}>
+            <Button title="Back" onPress={onBack} variant="primary" />
+          </View>
+        </Surface>
       </View>
     </View>
   );
@@ -44,25 +46,15 @@ const PlaceholderScreen = ({ screenName, onBack }) => {
 
 // Browse Screen - Placeholder
 const BrowseScreen = () => {
-  const { theme } = useTheme();
-  
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
-    return null;
-  }
+  const { paperTheme } = useTheme();
   
   return (
-    <View style={[styles.tabScreen, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.header, { 
-        backgroundColor: theme.colors.surface,
-        borderBottomColor: theme.colors.border.light,
-      }]}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text.primary }]}>
-          Browse
-        </Text>
-      </View>
+    <View style={[styles.tabScreen, { backgroundColor: paperTheme.colors.background }]}>
+      <Appbar.Header elevated mode="center-aligned">
+        <Appbar.Content title="Browse" />
+      </Appbar.Header>
       <View style={styles.centerContent}>
-        <Text style={[styles.comingSoonText, { color: theme.colors.text.secondary }]}>
+        <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
           Browse feature coming soon
         </Text>
       </View>
@@ -72,25 +64,15 @@ const BrowseScreen = () => {
 
 // History Screen - Placeholder
 const HistoryScreen = () => {
-  const { theme } = useTheme();
-  
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
-    return null;
-  }
+  const { paperTheme } = useTheme();
   
   return (
-    <View style={[styles.tabScreen, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.header, { 
-        backgroundColor: theme.colors.surface,
-        borderBottomColor: theme.colors.border.light,
-      }]}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text.primary }]}>
-          History
-        </Text>
-      </View>
+    <View style={[styles.tabScreen, { backgroundColor: paperTheme.colors.background }]}>
+      <Appbar.Header elevated mode="center-aligned">
+        <Appbar.Content title="History" />
+      </Appbar.Header>
       <View style={styles.centerContent}>
-        <Text style={[styles.comingSoonText, { color: theme.colors.text.secondary }]}>
+        <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
           History feature coming soon
         </Text>
       </View>
@@ -99,7 +81,7 @@ const HistoryScreen = () => {
 };
 
 function AppContent() {
-  const { theme } = useTheme();
+  const { theme, paperTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -167,11 +149,24 @@ function AppContent() {
   };
 
   if (loading) {
-    return null;
+    return (
+      <PaperProvider theme={paperTheme}>
+        <View style={[styles.container, styles.centerContent, { backgroundColor: paperTheme.colors.background }]}>
+          <ActivityIndicator size="large" color={paperTheme.colors.primary} />
+          <Text variant="bodyLarge" style={{ marginTop: 16, color: paperTheme.colors.onSurface }}>
+            Loading...
+          </Text>
+        </View>
+      </PaperProvider>
+    );
   }
 
   if (!user) {
-    return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <PaperProvider theme={paperTheme}>
+        <LoginScreen onLoginSuccess={handleLoginSuccess} />
+      </PaperProvider>
+    );
   }
 
   const renderLibraryScreen = () => {
@@ -239,14 +234,16 @@ function AppContent() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {renderCurrentTab()}
-      <BottomNavigation 
-        currentTab={currentTab} 
-        onTabChange={handleTabChange}
-        userRole={user?.role_id}
-      />
-    </View>
+    <PaperProvider theme={paperTheme}>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        {renderCurrentTab()}
+        <BottomNavigation 
+          currentTab={currentTab} 
+          onTabChange={handleTabChange}
+          userRole={user?.role_id}
+        />
+      </View>
+    </PaperProvider>
   );
 }
 
@@ -265,47 +262,39 @@ const styles = StyleSheet.create({
   tabScreen: {
     flex: 1,
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 34,
-    fontWeight: 'bold',
-  },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  comingSoonText: {
-    fontSize: 16,
+    padding: 24,
   },
   placeholderContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   placeholderContent: {
-    padding: 30,
-    borderRadius: 16,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  comingSoonCard: {
+    padding: 32,
+    borderRadius: 28,
     alignItems: 'center',
     width: '100%',
     maxWidth: 400,
   },
   placeholderTitle: {
-    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 8,
+    textAlign: 'center',
   },
   placeholderSubtitle: {
-    fontSize: 16,
-    marginBottom: 30,
+    marginBottom: 24,
+    textAlign: 'center',
   },
   placeholderButton: {
     width: '100%',
+    marginTop: 8,
   },
 });

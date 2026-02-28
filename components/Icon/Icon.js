@@ -1,69 +1,60 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-// Modern icon component using Unicode symbols
-const Icon = ({ name, size = 24, color = '#000', style }) => {
+// Material Design icon component using React Native Vector Icons
+const Icon = ({ name, size = 24, color, style }) => {
   const iconMap = {
     // Dashboard/Orders
-    'dashboard': '■',
-    'orders': '☰',
-    'cart': '⊕',
-    'box': '▢',
+    'dashboard': 'view-dashboard',
+    'orders': 'clipboard-list',
+    'cart': 'cart-plus',
+    'box': 'package-variant',
     
     // QC/Quality
-    'check': '✓',
-    'clipboard': '⊞',
-    'quality': '◈',
+    'check': 'check-circle',
+    'clipboard': 'clipboard-check',
+    'quality': 'quality-high',
     
     // Dispatch/Delivery
-    'truck': '▶',
-    'dispatch': '⇄',
-    'delivery': '⇨',
+    'truck': 'truck-delivery',
+    'dispatch': 'send',
+    'delivery': 'package-variant-closed',
     
     // Disputes/Issues
-    'alert': '⚠',
-    'dispute': '⚡',
-    'flag': '⚑',
+    'alert': 'alert',
+    'dispute': 'alert-circle',
+    'flag': 'flag',
     
     // Management
-    'users': '⚉',
-    'settings': '⚙',
-    'manage': '⊡',
-    'chart': '▤',
+    'users': 'account-group',
+    'settings': 'cog',
+    'manage': 'folder-cog',
+    'chart': 'chart-bar',
     
     // Navigation
-    'home': '⌂',
-    'search': '⌕',
-    'history': '⟲',
-    'more': '⋯',
+    'home': 'home',
+    'search': 'magnify',
+    'history': 'history',
+    'more': 'dots-horizontal',
     
     // Actions
-    'add': '+',
-    'edit': '✎',
-    'delete': '×',
-    'back': '←',
-    'forward': '→',
+    'add': 'plus',
+    'edit': 'pencil',
+    'delete': 'delete',
+    'back': 'arrow-left',
+    'forward': 'arrow-right',
   };
 
-  const iconChar = iconMap[name] || '?';
+  const iconName = iconMap[name] || 'help-circle';
 
   return (
-    <View style={[styles.container, { width: size, height: size }, style]}>
-      <Text style={[styles.icon, { fontSize: size * 0.8, color }]}>
-        {iconChar}
-      </Text>
-    </View>
+    <MaterialCommunityIcons 
+      name={iconName} 
+      size={size} 
+      color={color} 
+      style={style}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  icon: {
-    fontWeight: '300',
-  },
-});
 
 export default Icon;

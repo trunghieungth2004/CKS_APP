@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { Text, Appbar, Surface } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import { MenuButton } from '../../components';
@@ -13,12 +14,8 @@ const ROLE_NAMES = {
 };
 
 export default function DashboardScreen({ user, onNavigate }) {
-  const { theme } = useTheme();
+  const { theme, paperTheme } = useTheme();
 
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
-    return null;
-  }
 
   const renderMenuByRole = () => {
     switch (user.role_id) {
@@ -156,20 +153,21 @@ export default function DashboardScreen({ user, onNavigate }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <StatusBar style={theme.colors.statusBar} />
       
-      <View style={[styles.header, { 
-        backgroundColor: theme.colors.surface,
-        borderBottomColor: theme.colors.border.light,
-      }]}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-          CKS System
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+      <Appbar.Header elevated mode="center-aligned" style={{ backgroundColor: paperTheme.colors.surface }}>
+        <Appbar.Content 
+          title="CKS System" 
+          titleStyle={styles.headerTitle}
+        />
+      </Appbar.Header>
+
+      <Surface style={styles.userBanner} elevation={0}>
+        <Text variant="labelLarge" style={[styles.roleLabel, { color: paperTheme.colors.onSurfaceVariant }]}>
           {ROLE_NAMES[user.role_id]} Dashboard
         </Text>
-      </View>
+      </Surface>
 
       <ScrollView 
         style={styles.scrollView}
@@ -188,33 +186,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 34,
+  headerTitle: {
     fontWeight: 'bold',
-    marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 16,
+  userBanner: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  roleLabel: {
+    letterSpacing: 0.5,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 100,
   },
   menuSection: {
-    marginTop: 10,
-  },
-  errorText: {
-    textAlign: 'center',
-    fontSize: 16,
-    marginTop: 20,
+    marginTop: 8,
   },
 });

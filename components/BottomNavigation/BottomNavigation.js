@@ -1,65 +1,61 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, Surface } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
-import Icon from '../Icon/Icon';
 
 const BottomNavigation = ({ currentTab, onTabChange, userRole }) => {
-  const { theme } = useTheme();
-
-  // Safety check for theme
-  if (!theme || !theme.colors || !theme.colors.border || !theme.colors.text) {
-    return null;
-  }
+  const { paperTheme } = useTheme();
 
   // Get tabs based on user role
   const getTabsByRole = () => {
     switch (userRole) {
       case 4: // Store Staff
         return [
-          { id: 'library', label: 'Orders', icon: 'orders' },
-          { id: 'browse', label: 'Create', icon: 'add' },
-          { id: 'history', label: 'Disputes', icon: 'dispute' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
+          { key: 'library', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'browse', title: 'Create', icon: 'plus-circle' },
+          { key: 'history', title: 'Disputes', icon: 'alert-circle' },
+          { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
       case 1: // CK Staff
         return [
-          { id: 'library', label: 'QC', icon: 'quality' },
-          { id: 'browse', label: 'Orders', icon: 'orders' },
-          { id: 'history', label: 'History', icon: 'history' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
+          { key: 'library', title: 'QC', icon: 'quality-high' },
+          { key: 'browse', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'history', title: 'History', icon: 'history' },
+          { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
       case 2: // CK Supply
         return [
-          { id: 'library', label: 'QC', icon: 'quality' },
-          { id: 'browse', label: 'Dispatch', icon: 'truck' },
-          { id: 'history', label: 'Orders', icon: 'orders' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
+          { key: 'library', title: 'QC', icon: 'quality-high' },
+          { key: 'browse', title: 'Dispatch', icon: 'truck-delivery' },
+          { key: 'history', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
       case 3: // Manager
         return [
-          { id: 'library', label: 'Disputes', icon: 'dispute' },
-          { id: 'browse', label: 'Products', icon: 'manage' },
-          { id: 'history', label: 'Orders', icon: 'orders' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
+          { key: 'library', title: 'Disputes', icon: 'alert-circle' },
+          { key: 'browse', title: 'Products', icon: 'folder-cog' },
+          { key: 'history', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
       case 0: // Admin
         return [
-          { id: 'library', label: 'Dashboard', icon: 'dashboard' },
-          { id: 'browse', label: 'Users', icon: 'users' },
-          { id: 'history', label: 'Reports', icon: 'chart' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
+          { key: 'library', title: 'Dashboard', icon: 'view-dashboard' },
+          { key: 'browse', title: 'Users', icon: 'account-group' },
+          { key: 'history', title: 'Reports', icon: 'chart-bar' },
+          { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
       default:
         return [
-          { id: 'library', label: 'Home', icon: 'home' },
-          { id: 'browse', label: 'Browse', icon: 'search' },
-          { id: 'history', label: 'History', icon: 'history' },
-          { id: 'settings', label: 'Settings', icon: 'settings' },
+          { key: 'library', title: 'Home', icon: 'home' },
+          { key: 'browse', title: 'Browse', icon: 'magnify' },
+          { key: 'history', title: 'History', icon: 'history' },
+          { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
     }
   };
@@ -67,69 +63,73 @@ const BottomNavigation = ({ currentTab, onTabChange, userRole }) => {
   const tabs = getTabsByRole();
 
   return (
-    <View style={[styles.container, { 
-      backgroundColor: theme.colors.surface,
-      borderTopColor: theme.colors.border.light,
-    }]}>
+    <Surface style={[styles.container, { backgroundColor: paperTheme.colors.surface }]} elevation={3}>
       {tabs.map((tab) => {
-        const isActive = currentTab === tab.id;
+        const isActive = currentTab === tab.key;
         return (
           <TouchableOpacity
-            key={tab.id}
+            key={tab.key}
             style={styles.tab}
-            onPress={() => onTabChange(tab.id)}
-            activeOpacity={0.6}
+            onPress={() => onTabChange(tab.key)}
+            activeOpacity={0.7}
           >
             <View style={[
               styles.iconContainer,
               isActive && {
-                backgroundColor: theme.colors.primary + '15',
-                borderRadius: 20,
+                backgroundColor: paperTheme.colors.secondaryContainer,
+                borderRadius: 24,
               }
             ]}>
-              <Icon 
+              <MaterialCommunityIcons 
                 name={tab.icon} 
                 size={24} 
-                color={isActive ? theme.colors.primary : theme.colors.text.tertiary}
+                color={isActive ? paperTheme.colors.onSecondaryContainer : paperTheme.colors.onSurfaceVariant}
               />
             </View>
-            <Text style={[
-              styles.label,
-              { 
-                color: isActive ? theme.colors.primary : theme.colors.text.tertiary,
-                fontWeight: isActive ? '600' : '500',
-              }
-            ]}>
-              {tab.label}
+            <Text 
+              variant="labelSmall" 
+              style={[
+                styles.label,
+                { color: isActive ? paperTheme.colors.onSurface : paperTheme.colors.onSurfaceVariant }
+              ]}
+            >
+              {tab.title}
             </Text>
           </TouchableOpacity>
         );
       })}
-    </View>
+    </Surface>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderTopWidth: 1,
-    paddingBottom: 8,
-    paddingTop: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    height: 100,
+    alignItems: 'center',
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   iconContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    marginBottom: 2,
+    marginBottom: 4,
+    minWidth: 64,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
-    fontSize: 11,
-    letterSpacing: 0.2,
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });
 
