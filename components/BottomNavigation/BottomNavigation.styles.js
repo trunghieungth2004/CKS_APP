@@ -1,7 +1,5 @@
 import { StyleSheet } from 'react-native';
 
-const styles = StyleSheet.create({
-  // Placeholder for any additional styles if needed
-});
+const styles = StyleSheet.create({});
 
 export default styles;

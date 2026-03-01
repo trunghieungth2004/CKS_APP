@@ -22,7 +22,6 @@ export default function LoginScreen({ onLoginSuccess }) {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
-  // Safety check for theme
   if (!paperTheme || !paperTheme.colors) {
     return null;
   }
@@ -70,8 +69,7 @@ export default function LoginScreen({ onLoginSuccess }) {
   return (
     <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <StatusBar style={paperTheme.dark ? 'light' : 'dark'} />
-      
-      {/* Material Design 3 Header with gradient-like effect */}
+
       <Surface style={[styles.headerSection, { backgroundColor: paperTheme.colors.primary }]} elevation={0}>
         <View style={styles.headerContent}>
           <View style={styles.logoContainer}>

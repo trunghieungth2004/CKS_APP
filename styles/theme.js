@@ -1,5 +1,3 @@
-// Material Design 3 Color System
-// Common spacing following Material Design guidelines
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -9,7 +7,6 @@ export const spacing = {
   xxl: 48,
 };
 
-// Material Design Typography Scale
 export const fontSize = {
   displayLarge: 57,
   displayMedium: 45,
@@ -28,7 +25,6 @@ export const fontSize = {
   labelSmall: 11,
 };
 
-// Material Design Shape Scale
 export const borderRadius = {
   none: 0,
   xs: 4,
@@ -39,7 +35,6 @@ export const borderRadius = {
   full: 9999,
 };
 
-// Material Design 3 Light Theme - Dynamic Color
 const lightColors = {
   primary: '#42A5F5',
   onPrimary: '#FFFFFF',
@@ -79,7 +74,6 @@ const lightColors = {
   inverseOnSurface: '#F4EFF4',
   inversePrimary: '#D0BCFF',
   
-  // Custom colors for app-specific needs
   success: '#1F8A70',
   onSuccess: '#FFFFFF',
   successContainer: '#A7F3D0',
@@ -95,7 +89,6 @@ const lightColors = {
   infoContainer: '#97F0FF',
   onInfoContainer: '#001F24',
   
-  // Legacy support (maps to new system)
   text: {
     primary: '#1C1B1F',
     secondary: '#49454F',
@@ -128,96 +121,92 @@ const lightColors = {
   statusBar: 'dark',
 };
 
-// Material Design 3 Dark Theme - Dynamic Color
 const darkColors = {
-  primary: '#1565C0',
-  onPrimary: '#FFFFFF',
-  primaryContainer: '#0D47A1',
-  onPrimaryContainer: '#BBDEFB',
+  primary: '#90CAF9',
+  onPrimary: '#0D47A1',
+  primaryContainer: '#1565C0',
+  onPrimaryContainer: '#E3F2FD',
   
-  secondary: '#0277BD',
-  onSecondary: '#FFFFFF',
-  secondaryContainer: '#01579B',
-  onSecondaryContainer: '#B3E5FC',
+  secondary: '#80DEEA',
+  onSecondary: '#006064',
+  secondaryContainer: '#00838F',
+  onSecondaryContainer: '#E0F7FA',
   
-  tertiary: '#EFB8C8',
-  onTertiary: '#492532',
-  tertiaryContainer: '#633B48',
-  onTertiaryContainer: '#FFD8E4',
+  tertiary: '#F48FB1',
+  onTertiary: '#880E4F',
+  tertiaryContainer: '#AD1457',
+  onTertiaryContainer: '#FCE4EC',
   
-  error: '#F2B8B5',
-  onError: '#601410',
-  errorContainer: '#8C1D18',
-  onErrorContainer: '#F9DEDC',
+  error: '#EF5350',
+  onError: '#FFFFFF',
+  errorContainer: '#C62828',
+  onErrorContainer: '#FFCDD2',
   
-  background: '#1C1B1F',
-  onBackground: '#E6E1E5',
+  background: '#121212',
+  onBackground: '#E0E0E0',
   
-  surface: '#1C1B1F',
-  onSurface: '#E6E1E5',
-  surfaceVariant: '#49454F',
-  onSurfaceVariant: '#CAC4D0',
+  surface: '#1E1E1E',
+  onSurface: '#E0E0E0',
+  surfaceVariant: '#2C2C2C',
+  onSurfaceVariant: '#BDBDBD',
   
-  outline: '#938F99',
-  outlineVariant: '#49454F',
+  outline: '#757575',
+  outlineVariant: '#424242',
   
   shadow: '#000000',
   scrim: '#000000',
   
-  inverseSurface: '#E6E1E5',
-  inverseOnSurface: '#313033',
-  inversePrimary: '#6750A4',
+  inverseSurface: '#E0E0E0',
+  inverseOnSurface: '#121212',
+  inversePrimary: '#1976D2',
   
-  // Custom colors for app-specific needs
-  success: '#7DDAC2',
-  onSuccess: '#00382D',
-  successContainer: '#005142',
-  onSuccessContainer: '#A7F3D0',
+  success: '#81C784',
+  onSuccess: '#1B5E20',
+  successContainer: '#388E3C',
+  onSuccessContainer: '#C8E6C9',
   
-  warning: '#F4C542',
-  onWarning: '#4D3700',
-  warningContainer: '#6F5100',
-  onWarningContainer: '#FDE68A',
+  warning: '#FFB74D',
+  onWarning: '#E65100',
+  warningContainer: '#F57C00',
+  onWarningContainer: '#FFE0B2',
   
-  info: '#4FD8EB',
-  onInfo: '#00363D',
-  infoContainer: '#004F58',
-  onInfoContainer: '#97F0FF',
+  info: '#4DD0E1',
+  onInfo: '#006064',
+  infoContainer: '#0097A7',
+  onInfoContainer: '#B2EBF2',
   
-  // Legacy support (maps to new system)
   text: {
-    primary: '#E6E1E5',
-    secondary: '#CAC4D0',
-    tertiary: '#938F99',
-    disabled: '#5A5A5A',
-    inverse: '#313033',
+    primary: '#FFFFFF',
+    secondary: '#BDBDBD',
+    tertiary: '#9E9E9E',
+    disabled: '#616161',
+    inverse: '#121212',
   },
   
   border: {
-    light: '#49454F',
-    medium: '#938F99',
-    dark: '#CAC4D0',
+    light: '#424242',
+    medium: '#616161',
+    dark: '#757575',
   },
   
   icon: {
-    primary: '#E6E1E5',
-    secondary: '#CAC4D0',
-    tertiary: '#938F99',
+    primary: '#FFFFFF',
+    secondary: '#BDBDBD',
+    tertiary: '#9E9E9E',
   },
   
   elevation: {
-    level0: '#1C1B1F',
-    level1: '#28242B',
-    level2: '#2D2930',
-    level3: '#322F35',
-    level4: '#343037',
-    level5: '#38343B',
+    level0: '#121212',
+    level1: '#1E1E1E',
+    level2: '#232323',
+    level3: '#282828',
+    level4: '#2C2C2C',
+    level5: '#323232',
   },
   
   statusBar: 'light',
 };
 
-// Material Design Elevation (Shadows)
 const elevation = {
   level0: {
     shadowColor: '#000',
@@ -263,7 +252,6 @@ const elevation = {
   },
 };
 
-// React Native Paper theme configuration
 export const materialLightTheme = {
   dark: false,
   version: 3,
@@ -298,6 +286,18 @@ export const materialLightTheme = {
     inverseOnSurface: lightColors.inverseOnSurface,
     inversePrimary: lightColors.inversePrimary,
     elevation: lightColors.elevation,
+    success: lightColors.success,
+    onSuccess: lightColors.onSuccess,
+    successContainer: lightColors.successContainer,
+    onSuccessContainer: lightColors.onSuccessContainer,
+    warning: lightColors.warning,
+    onWarning: lightColors.onWarning,
+    warningContainer: lightColors.warningContainer,
+    onWarningContainer: lightColors.onWarningContainer,
+    info: lightColors.info,
+    onInfo: lightColors.onInfo,
+    infoContainer: lightColors.infoContainer,
+    onInfoContainer: lightColors.onInfoContainer,
   },
   fonts: {
     displayLarge: { fontSize: fontSize.displayLarge, fontWeight: '400', lineHeight: 64 },
@@ -353,6 +353,18 @@ export const materialDarkTheme = {
     inverseOnSurface: darkColors.inverseOnSurface,
     inversePrimary: darkColors.inversePrimary,
     elevation: darkColors.elevation,
+    success: darkColors.success,
+    onSuccess: darkColors.onSuccess,
+    successContainer: darkColors.successContainer,
+    onSuccessContainer: darkColors.onSuccessContainer,
+    warning: darkColors.warning,
+    onWarning: darkColors.onWarning,
+    warningContainer: darkColors.warningContainer,
+    onWarningContainer: darkColors.onWarningContainer,
+    info: darkColors.info,
+    onInfo: darkColors.onInfo,
+    infoContainer: darkColors.infoContainer,
+    onInfoContainer: darkColors.onInfoContainer,
   },
   fonts: {
     displayLarge: { fontSize: fontSize.displayLarge, fontWeight: '400', lineHeight: 64 },
@@ -374,7 +386,6 @@ export const materialDarkTheme = {
   roundness: borderRadius.md,
 };
 
-// Exported theme objects (legacy support)
 export const lightTheme = {
   colors: lightColors,
   spacing,
@@ -393,14 +404,10 @@ export const darkTheme = {
   dark: true,
 };
 
-// Legacy exports
 export const colors = lightColors;
 export const shadows = elevation;
 
-// Material You Dynamic Color Generator
-// This creates vibrant, personalized themes based on Material Design 3
 export const getMaterialYouTheme = (isDark = false) => {
-  // Material You color palette - more vibrant and dynamic
   const materialYouColors = isDark ? {
     primary: '#BB86FC',
     onPrimary: '#3700B3',

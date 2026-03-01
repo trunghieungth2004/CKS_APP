@@ -1,25 +1,27 @@
-import React from 'react';
-import { View, ScrollView, Alert, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { Text, Appbar, List, Switch, Divider, Button as PaperButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
+import { CustomDialog } from '../../components';
 
 export default function SettingsScreen({ user, onLogout }) {
   const { theme, paperTheme, isDarkMode, useMaterialYou, toggleTheme, toggleMaterialYou } = useTheme();
+  const [dialog, setDialog] = useState({ visible: false, title: '', message: '', type: 'info', onConfirm: null, showCancel: false });
 
   const handleLogout = () => {
-    Alert.alert(
-      'Confirm Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: onLogout 
-        },
-      ]
-    );
+    setDialog({
+      visible: true,
+      title: 'Confirm Logout',
+      message: 'Are you sure you want to logout?',
+      type: 'confirm',
+      onConfirm: () => {
+        setDialog({ ...dialog, visible: false });
+        onLogout();
+      },
+      showCancel: true,
+      confirmText: 'Logout',
+    });
   };
 
   return (
@@ -98,6 +100,18 @@ export default function SettingsScreen({ user, onLogout }) {
           </Text>
         </View>
       </ScrollView>
+
+      <CustomDialog
+        visible={dialog.visible}
+        title={dialog.title}
+        message={dialog.message}
+        type={dialog.type}
+        onDismiss={() => setDialog({ ...dialog, visible: false })}
+        onConfirm={dialog.onConfirm}
+        showCancel={dialog.showCancel}
+        confirmText={dialog.confirmText}
+        cancelText={dialog.cancelText}
+      />
     </View>
   );
 }

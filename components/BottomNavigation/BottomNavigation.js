@@ -7,54 +7,54 @@ import { useTheme } from '../../context/ThemeContext';
 const BottomNavigation = ({ currentTab, onTabChange, userRole }) => {
   const { paperTheme } = useTheme();
 
-  // Get tabs based on user role
   const getTabsByRole = () => {
     switch (userRole) {
-      case 4: // Store Staff
+      case 4:
         return [
-          { key: 'library', title: 'Orders', icon: 'clipboard-list' },
-          { key: 'browse', title: 'Create', icon: 'plus-circle' },
-          { key: 'history', title: 'Disputes', icon: 'alert-circle' },
+          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'create', title: 'Create', icon: 'plus-circle' },
+          { key: 'inventory', title: 'Inventory', icon: 'package-variant' },
+          { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
           { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
-      case 1: // CK Staff
+      case 1:
         return [
-          { key: 'library', title: 'QC', icon: 'quality-high' },
-          { key: 'browse', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'qc', title: 'QC', icon: 'quality-high' },
+          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
           { key: 'history', title: 'History', icon: 'history' },
           { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
-      case 2: // CK Supply
+      case 2:
         return [
-          { key: 'library', title: 'QC', icon: 'quality-high' },
-          { key: 'browse', title: 'Dispatch', icon: 'truck-delivery' },
-          { key: 'history', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'qc', title: 'QC', icon: 'quality-high' },
+          { key: 'dispatch', title: 'Dispatch', icon: 'truck-delivery' },
+          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
           { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
-      case 3: // Manager
+      case 3:
         return [
-          { key: 'library', title: 'Disputes', icon: 'alert-circle' },
-          { key: 'browse', title: 'Products', icon: 'folder-cog' },
-          { key: 'history', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
+          { key: 'products', title: 'Products', icon: 'folder-cog' },
+          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
           { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
-      case 0: // Admin
+      case 0:
         return [
-          { key: 'library', title: 'Dashboard', icon: 'view-dashboard' },
-          { key: 'browse', title: 'Users', icon: 'account-group' },
-          { key: 'history', title: 'Reports', icon: 'chart-bar' },
+          { key: 'dashboard', title: 'Dashboard', icon: 'view-dashboard' },
+          { key: 'users', title: 'Users', icon: 'account-group' },
+          { key: 'reports', title: 'Reports', icon: 'chart-bar' },
           { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
       
       default:
         return [
-          { key: 'library', title: 'Home', icon: 'home' },
-          { key: 'browse', title: 'Browse', icon: 'magnify' },
-          { key: 'history', title: 'History', icon: 'history' },
+          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
+          { key: 'create', title: 'Create', icon: 'plus-circle' },
+          { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
           { key: 'settings', title: 'Settings', icon: 'cog' },
         ];
     }
@@ -119,15 +119,15 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 4,
-    minWidth: 64,
-    paddingHorizontal: 20,
+    minWidth: 56,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    fontSize: 12,
+    fontSize: 11,
     textAlign: 'center',
     fontWeight: '500',
   },

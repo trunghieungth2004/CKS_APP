@@ -2,7 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import storage from '../utils/storage';
 import { lightTheme, darkTheme, materialLightTheme, materialDarkTheme, getMaterialYouTheme } from '../styles/theme';
 
-// Create context with default value
 const ThemeContext = createContext({
   theme: lightTheme,
   isDarkMode: false,
@@ -48,7 +47,6 @@ export const ThemeProvider = ({ children }) => {
     await storage.setItem('materialYou', newValue.toString());
   };
 
-  // Always ensure we have a valid theme object
   const theme = isDarkMode ? darkTheme : lightTheme;
   const paperTheme = useMaterialYou 
     ? getMaterialYouTheme(isDarkMode)
@@ -64,7 +62,6 @@ export const ThemeProvider = ({ children }) => {
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    // Return default theme if context is not available
     return {
       theme: lightTheme,
       paperTheme: materialLightTheme,

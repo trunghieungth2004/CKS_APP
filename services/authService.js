@@ -3,7 +3,6 @@ import { API_BASE_URL, API_ENDPOINTS } from '../config/constants';
 class AuthService {
   async login(email, password) {
     try {
-      // Add timeout to detect hanging requests
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
