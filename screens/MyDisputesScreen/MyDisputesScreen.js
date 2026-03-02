@@ -10,6 +10,7 @@ import { DISPUTE_TYPE_LABELS } from '../../config/constants';
 export default function MyDisputesScreen({ onNavigate }) {
   const { paperTheme } = useTheme();
   const [disputes, setDisputes] = useState([]);
+  const [products, setProducts] = useState({});
   const [expandedDispute, setExpandedDispute] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -21,11 +22,27 @@ export default function MyDisputesScreen({ onNavigate }) {
   const loadDisputes = async () => {
     setLoading(true);
     const result = await apiService.post('/api/dispute/my-disputes', {});
-    setLoading(false);
 
     if (result.success && result.data.data) {
-      setDisputes(result.data.data);
+      const disputesData = result.data.data;
+      
+      const allProductIds = new Set();
+      disputesData.forEach(dispute => {
+        dispute.items?.forEach(item => allProductIds.add(item.product_id));
+      });
+      
+      const productMap = {};
+      for (const productId of allProductIds) {
+        const result = await apiService.post('/api/product/one', { productId });
+        if (result.success && result.data.data) {
+          productMap[productId] = result.data.data;
+        }
+      }
+      setProducts(productMap);
+      setDisputes(disputesData);
     }
+    
+    setLoading(false);
   };
 
   const onRefresh = async () => {
@@ -121,7 +138,7 @@ export default function MyDisputesScreen({ onNavigate }) {
                   {dispute.items.slice(0, 2).map((item, index) => (
                     <View key={index} style={styles.itemPreviewRow}>
                       <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                        {DISPUTE_TYPE_LABELS[item.issue_type]} ({item.disputed_quantity} units)
+                        {products[item.product_id]?.product_name || 'Product'} - {DISPUTE_TYPE_LABELS[item.issue_type]} ({item.disputed_quantity} units)
                       </Text>
                     </View>
                   ))}
@@ -159,7 +176,7 @@ export default function MyDisputesScreen({ onNavigate }) {
                               {DISPUTE_TYPE_LABELS[item.issue_type]}
                             </Text>
                             <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                              Product ID: {item.product_id}
+                              Product: {products[item.product_id]?.product_name || item.product_id}
                             </Text>
                             <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
                               Quantity: {item.disputed_quantity}

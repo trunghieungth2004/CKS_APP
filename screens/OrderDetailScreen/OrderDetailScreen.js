@@ -34,7 +34,6 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
   const loadOrderDetails = async () => {
     setLoading(true);
     const result = await apiService.post('/api/order/one', { order_id: orderId });
-    console.log('Load Order Details Result:', result);
 
     if (result.success && result.data.data) {
       const orderData = result.data.data;
@@ -45,6 +44,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
     } else {
       setDialog({ visible: true, title: 'Error', message: 'Failed to load order details', type: 'error', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
     }
+    
     setLoading(false);
   };
 
@@ -309,7 +309,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
                   {product?.price && (
                     <View style={[styles.itemTotal, { borderTopColor: paperTheme.colors.outlineVariant }]}>
                       <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                        Subtotal
+                        Item Total
                       </Text>
                       <Text variant="titleMedium" style={{ fontWeight: 'bold', color: paperTheme.colors.primary }}>
                         ${(Number(product.price) * item.quantity).toFixed(2)}
@@ -319,6 +319,38 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
                 </Surface>
               );
             })}
+          </View>
+        </Surface>
+
+        <Surface style={styles.card} elevation={1}>
+          <Text variant="titleMedium" style={styles.sectionTitle}>Order Summary</Text>
+          <View style={styles.summaryContainer}>
+            <View style={styles.summaryRow}>
+              <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                Subtotal
+              </Text>
+              <Text variant="bodyLarge" style={{ fontWeight: 'bold' }}>
+                ${(order.subtotal || 0).toFixed(2)}
+              </Text>
+            </View>
+            {order.credits_applied > 0 && (
+              <View style={styles.summaryRow}>
+                <Text variant="bodyMedium" style={{ color: paperTheme.colors.tertiary }}>
+                  Credits Applied
+                </Text>
+                <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: paperTheme.colors.tertiary }}>
+                  -${(order.credits_applied || 0).toFixed(2)}
+                </Text>
+              </View>
+            )}
+            <View style={[styles.summaryRow, { paddingTop: 8, borderTopWidth: 1, borderTopColor: paperTheme.colors.outlineVariant }]}>
+              <Text variant="titleSmall" style={{ fontWeight: 'bold' }}>
+                Total
+              </Text>
+              <Text variant="titleMedium" style={{ fontWeight: 'bold', color: paperTheme.colors.primary }}>
+                ${(order.total_after_credits !== undefined ? order.total_after_credits : order.subtotal || 0).toFixed(2)}
+              </Text>
+            </View>
           </View>
         </Surface>
 
@@ -502,5 +534,14 @@ const styles = StyleSheet.create({
   historyHeader: {
     flexDirection: 'column',
     gap: 4,
+  },
+  summaryContainer: {
+    gap: 8,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
   },
 });

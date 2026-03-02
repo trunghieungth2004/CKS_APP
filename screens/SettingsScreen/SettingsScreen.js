@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import { CustomDialog } from '../../components';
 
-export default function SettingsScreen({ user, onLogout }) {
+export default function SettingsScreen({ user, storeInfo, onLogout }) {
   const { theme, paperTheme, isDarkMode, useMaterialYou, toggleTheme, toggleMaterialYou } = useTheme();
   const [dialog, setDialog] = useState({ visible: false, title: '', message: '', type: 'info', onConfirm: null, showCancel: false });
 
@@ -45,6 +45,20 @@ export default function SettingsScreen({ user, onLogout }) {
             description={getRoleName(user?.role_id)}
             left={props => <List.Icon {...props} icon="account-badge" />}
           />
+          {storeInfo && (
+            <>
+              <List.Item
+                title="Store ID"
+                description={storeInfo.store_staff_id || 'N/A'}
+                left={props => <List.Icon {...props} icon="store" />}
+              />
+              <List.Item
+                title="Available Credits"
+                description={`$${(storeInfo.totalCredits || 0).toFixed(2)}`}
+                left={props => <List.Icon {...props} icon="currency-usd" />}
+              />
+            </>
+          )}
         </List.Section>
 
         <Divider />

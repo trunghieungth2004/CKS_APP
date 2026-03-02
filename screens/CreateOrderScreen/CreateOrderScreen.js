@@ -10,7 +10,7 @@ import apiService from '../../services/apiService';
 import { en, registerTranslation } from 'react-native-paper-dates';
 registerTranslation('en', en);
 
-export default function CreateOrderScreen({ onNavigateTab }) {
+export default function CreateOrderScreen({ onNavigateTab, storeInfo }) {
   const { paperTheme } = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +19,7 @@ export default function CreateOrderScreen({ onNavigateTab }) {
   const [deliveryDate, setDeliveryDate] = useState(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [notes, setNotes] = useState('');
+  const [creditsToUse, setCreditsToUse] = useState('');
   const [addedItems, setAddedItems] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productDetailVisible, setProductDetailVisible] = useState(false);
@@ -123,6 +124,19 @@ export default function CreateOrderScreen({ onNavigateTab }) {
     return `${day}/${month}/${year}`;
   };
 
+  const calculateOrderTotal = () => {
+    return Object.entries(addedItems).reduce((total, [productId, data]) => {
+      const product = products.find(p => p.product_id === productId);
+      return total + (product ? Number(product.price) * data.quantity : 0);
+    }, 0);
+  };
+
+  const calculateAmountToPay = () => {
+    const total = calculateOrderTotal();
+    const credits = parseFloat(creditsToUse) || 0;
+    return Math.max(0, total - credits);
+  };
+
   const handleSubmit = async () => {
     const items = Object.entries(addedItems).map(([productId, data]) => ({
       product_id: productId,
@@ -139,13 +153,41 @@ export default function CreateOrderScreen({ onNavigateTab }) {
       return;
     }
 
+    const creditsValue = parseFloat(creditsToUse) || 0;
+    if (creditsValue < 0) {
+      setDialog({ visible: true, title: 'Validation Error', message: 'Credits cannot be negative', type: 'warning', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
+      return;
+    }
+
+    const availableCredits = storeInfo?.totalCredits || 0;
+    if (creditsValue > availableCredits) {
+      setDialog({ visible: true, title: 'Validation Error', message: `Credits exceed available balance ($${availableCredits.toFixed(2)})`, type: 'warning', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
+      return;
+    }
+
+    const orderTotal = items.reduce((total, item) => {
+      const product = products.find(p => p.product_id === item.product_id);
+      return total + (product ? Number(product.price) * item.quantity : 0);
+    }, 0);
+
+    if (creditsValue > orderTotal) {
+      setDialog({ visible: true, title: 'Validation Error', message: `Credits ($${creditsValue.toFixed(2)}) cannot exceed order total ($${orderTotal.toFixed(2)})`, type: 'warning', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
+      return;
+    }
+
     setSubmitting(true);
 
-    const result = await apiService.post('/api/order/create', {
+    const orderData = {
       delivery_date: deliveryDate.toISOString(),
       items: items,
       notes: notes || undefined,
-    });
+    };
+
+    if (creditsValue > 0) {
+      orderData.credits_to_use = parseFloat(creditsValue.toFixed(2));
+    }
+
+    const result = await apiService.post('/api/order/create', orderData);
 
     setSubmitting(false);
 
@@ -160,6 +202,7 @@ export default function CreateOrderScreen({ onNavigateTab }) {
           setAddedItems({});
           setDeliveryDate(null);
           setNotes('');
+          setCreditsToUse('');
           if (onNavigateTab) {
             onNavigateTab('orders', 'OR100');
           }
@@ -180,17 +223,35 @@ export default function CreateOrderScreen({ onNavigateTab }) {
       </Appbar.Header>
 
       <View style={styles.orderDetails}>
-        <TouchableOpacity
-          onPress={() => setDatePickerOpen(true)}
-          style={[styles.dateInput, { 
-            backgroundColor: paperTheme.colors.surface,
-            borderColor: paperTheme.colors.outline
-          }]}
-        >
-          <Text variant="bodyLarge" style={{ color: deliveryDate ? paperTheme.colors.onSurface : paperTheme.colors.onSurfaceVariant }}>
-            {deliveryDate ? formatDate(deliveryDate) : 'Select Delivery Date (DD/MM/YYYY)'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.dateNotesRow}>
+          <TouchableOpacity
+            onPress={() => setDatePickerOpen(true)}
+            style={[styles.dateInput, { 
+              backgroundColor: paperTheme.colors.surface,
+              borderColor: paperTheme.colors.outline,
+              flex: 1,
+            }]}
+          >
+            <Text variant="bodyMedium" style={{ color: deliveryDate ? paperTheme.colors.onSurface : paperTheme.colors.onSurfaceVariant }}>
+              {deliveryDate ? formatDate(deliveryDate) : 'Delivery Date'}
+            </Text>
+          </TouchableOpacity>
+
+          <TextInput
+            style={[styles.input, { 
+              backgroundColor: paperTheme.colors.surface,
+              color: paperTheme.colors.onSurface,
+              borderColor: paperTheme.colors.outline,
+              flex: 1,
+              minHeight: 40,
+              fontSize: 14,
+            }]}
+            placeholder="Notes (Optional)"
+            placeholderTextColor={paperTheme.colors.onSurfaceVariant}
+            value={notes}
+            onChangeText={setNotes}
+          />
+        </View>
 
         <DatePickerModal
           locale="en"
@@ -206,18 +267,25 @@ export default function CreateOrderScreen({ onNavigateTab }) {
             startDate: new Date(new Date().setDate(new Date().getDate() + 1)),
           }}
         />
-        <TextInput
-          style={[styles.input, { 
-            backgroundColor: paperTheme.colors.surface,
-            color: paperTheme.colors.onSurface,
-            borderColor: paperTheme.colors.outline
-          }]}
-          placeholder="Notes (Optional)"
-          placeholderTextColor={paperTheme.colors.onSurfaceVariant}
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-        />
+        {storeInfo && storeInfo.totalCredits > 0 && (
+          <View style={styles.creditsContainer}>
+            <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant, marginBottom: 4 }}>
+              Available Credits: ${(storeInfo.totalCredits || 0).toFixed(2)}
+            </Text>
+            <TextInput
+              style={[styles.input, { 
+                backgroundColor: paperTheme.colors.surface,
+                color: paperTheme.colors.onSurface,
+                borderColor: paperTheme.colors.outline
+              }]}
+              placeholder="Credits to use (Optional)"
+              placeholderTextColor={paperTheme.colors.onSurfaceVariant}
+              value={creditsToUse}
+              onChangeText={setCreditsToUse}
+              keyboardType="decimal-pad"
+            />
+          </View>
+        )}
       </View>
 
       <Searchbar
@@ -392,25 +460,53 @@ export default function CreateOrderScreen({ onNavigateTab }) {
       </Modal>
 
       <Surface style={styles.footer} elevation={4}>
-        <View style={styles.footerContent}>
-          <View style={styles.summaryContainer}>
+        <View style={styles.summaryContainer}>
+          <View style={styles.summaryRow}>
             <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-              Total Items
+              Total Items:
             </Text>
-            <Chip mode="flat">
-              {Object.keys(addedItems).length} products
-            </Chip>
+            <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
+              {Object.keys(addedItems).length}
+            </Text>
           </View>
-          <PaperButton 
-            mode="contained" 
-            onPress={handleSubmit}
-            loading={submitting}
-            disabled={submitting || Object.keys(addedItems).length === 0}
-            style={styles.submitButton}
-          >
-            Place Order
-          </PaperButton>
+          <View style={styles.summaryRow}>
+            <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+              Order Total:
+            </Text>
+            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: paperTheme.colors.primary }}>
+              ${calculateOrderTotal().toFixed(2)}
+            </Text>
+          </View>
+          {creditsToUse && parseFloat(creditsToUse) > 0 && (
+            <>
+              <View style={styles.summaryRow}>
+                <Text variant="bodySmall" style={{ color: paperTheme.colors.tertiary }}>
+                  Credits Applied:
+                </Text>
+                <Text variant="bodyMedium" style={{ fontWeight: 'bold', color: paperTheme.colors.tertiary }}>
+                  -${parseFloat(creditsToUse).toFixed(2)}
+                </Text>
+              </View>
+              <View style={[styles.summaryRow, { paddingTop: 4, borderTopWidth: 1, borderTopColor: paperTheme.colors.outlineVariant }]}>
+                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
+                  Amount to Pay:
+                </Text>
+                <Text variant="titleMedium" style={{ fontWeight: 'bold', color: paperTheme.colors.primary }}>
+                  ${calculateAmountToPay().toFixed(2)}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
+        <PaperButton 
+          mode="contained" 
+          onPress={handleSubmit}
+          loading={submitting}
+          disabled={submitting || Object.keys(addedItems).length === 0}
+          style={styles.submitButton}
+        >
+          Place Order
+        </PaperButton>
       </Surface>
 
       <CustomDialog
@@ -434,11 +530,18 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
+  dateNotesRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   input: {
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+  },
+  creditsContainer: {
+    marginTop: 8,
   },
   dateInput: {
     borderWidth: 1,
@@ -513,19 +616,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-  },
-  footerContent: {
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   summaryContainer: {
     flexDirection: 'column',
     gap: 4,
+    marginBottom: 12,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 2,
   },
   submitButton: {
-    paddingHorizontal: 24,
+    width: '100%',
   },
   modalOverlay: {
     flex: 1,

@@ -23,7 +23,7 @@ export default function InventoryScreen() {
 
   const loadInventory = async () => {
     setLoading(true);
-    const result = await apiService.get('/api/inventory/store');
+    const result = await apiService.post('/api/inventory/store');
     setLoading(false);
     setRefreshing(false);
 

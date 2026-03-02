@@ -79,6 +79,7 @@ function AppContent() {
   const { theme, paperTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [storeInfo, setStoreInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState('library');
   const [currentScreen, setCurrentScreen] = useState('Dashboard');
@@ -132,11 +133,15 @@ function AppContent() {
     try {
       const savedUser = await storage.getItem('user');
       const savedToken = await storage.getItem('token');
+      const savedStoreInfo = await storage.getItem('storeInfo');
 
       if (savedUser && savedToken) {
         setUser(savedUser);
         setToken(savedToken);
         apiService.setToken(savedToken);
+        if (savedStoreInfo) {
+          setStoreInfo(savedStoreInfo);
+        }
       }
     } catch (error) {
       console.error('Error loading auth data:', error);
@@ -149,21 +154,33 @@ function AppContent() {
     setUser(authData.user);
     setToken(authData.token);
     apiService.setToken(authData.token);
+    hideSnackbar();
 
     await storage.setItem('user', authData.user);
     await storage.setItem('token', authData.token);
+
+    if (authData.user.role_id === 4) {
+      const storeInfoResult = await apiService.post('/api/user/store-info', {});
+      if (storeInfoResult.success && storeInfoResult.data.data) {
+        setStoreInfo(storeInfoResult.data.data);
+        await storage.setItem('storeInfo', storeInfoResult.data.data);
+      }
+    }
   };
 
   const handleLogout = async () => {
     setUser(null);
     setToken(null);
+    setStoreInfo(null);
     apiService.clearToken();
     setCurrentScreen('Dashboard');
     setScreenParams({});
     setCurrentTab('orders');
+    hideSnackbar();
 
     await storage.removeItem('user');
     await storage.removeItem('token');
+    await storage.removeItem('storeInfo');
   };
 
   const handleNavigate = (screen, params = {}) => {
@@ -220,13 +237,13 @@ function AppContent() {
         case 'orders':
           return <MyOrdersScreen onNavigate={handleNavigate} initialStatus={ordersInitialStatus} onStatusChange={() => setOrdersInitialStatus(null)} />;
         case 'create':
-          return <CreateOrderScreen onNavigateTab={handleNavigateTab} />;
+          return <CreateOrderScreen onNavigateTab={handleNavigateTab} storeInfo={storeInfo} />;
         case 'inventory':
           return <InventoryScreen />;
         case 'disputes':
           return <DisputesScreen onNavigate={handleNavigate} />;
         case 'settings':
-          return <SettingsScreen user={user} onLogout={handleLogout} />;
+          return <SettingsScreen user={user} storeInfo={storeInfo} onLogout={handleLogout} />;
         default:
           return <MyOrdersScreen onNavigate={handleNavigate} initialStatus={ordersInitialStatus} onStatusChange={() => setOrdersInitialStatus(null)} />;
       }
@@ -234,7 +251,7 @@ function AppContent() {
 
     switch (currentTab) {
       case 'settings':
-        return <SettingsScreen user={user} onLogout={handleLogout} />;
+        return <SettingsScreen user={user} storeInfo={storeInfo} onLogout={handleLogout} />;
       default:
         if (currentScreen !== 'Dashboard') {
           switch (currentScreen) {

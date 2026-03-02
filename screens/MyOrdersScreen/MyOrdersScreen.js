@@ -211,6 +211,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
               mode={selectedStatus === tab.value ? 'flat' : 'outlined'}
               selected={selectedStatus === tab.value}
               onPress={() => setSelectedStatus(tab.value)}
+              disabled={loading}
               style={[
                 styles.tabChip,
                 selectedStatus === tab.value && { backgroundColor: paperTheme.colors.primaryContainer }
