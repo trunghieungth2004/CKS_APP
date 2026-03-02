@@ -4,6 +4,7 @@ import { Text, Appbar, ActivityIndicator, Surface, Chip, Button as PaperButton, 
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { formatDate } from '../../utils/validators';
 import { DISPUTE_TYPES, DISPUTE_TYPE_LABELS, DISPUTE_TYPE_DESCRIPTIONS, DISPUTE_WINDOW_HOURS } from '../../config/constants';
 
 export default function FileDisputeScreen() {
@@ -234,7 +235,7 @@ export default function FileDisputeScreen() {
                   
                   <View style={styles.orderInfo}>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                      Delivery Date: {new Date(order.delivery_date).toLocaleDateString()}
+                      Delivery Date: {formatDate(order.delivery_date)}
                     </Text>
                   </View>
                 </Surface>

@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import { CustomDialog } from '../../components';
 import apiService from '../../services/apiService';
+import { formatDate } from '../../utils/validators';
 import { DISPUTE_WINDOW_HOURS } from '../../config/constants';
 import DisputeModal from '../OrderDetailScreen/DisputeModal';
 
@@ -47,6 +48,8 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
   const [dialog, setDialog] = useState({ visible: false, title: '', message: '', type: 'info', onConfirm: null, showCancel: false });
 
   useEffect(() => {
+    setOrders([]);
+    setLoading(true);
     loadOrders();
   }, [selectedStatus]);
 
@@ -60,12 +63,9 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
   }, [initialStatus]);
 
   const loadOrders = async () => {
-    setLoading(true);
     const result = await apiService.post('/api/order/my-orders', {
       order_status_id: selectedStatus
     });
-    setLoading(false);
-    setRefreshing(false);
 
     if (result.success && result.data.data) {
       const ordersData = result.data.data;
@@ -85,8 +85,12 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
       setProducts(productMap);
       setOrders(ordersData);
     } else {
+      setOrders([]);
       setDialog({ visible: true, title: 'Error', message: 'Failed to load orders', type: 'error', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
     }
+    
+    setLoading(false);
+    setRefreshing(false);
   };
 
   const onRefresh = () => {
@@ -267,7 +271,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
 
                 <View style={styles.orderInfo}>
                   <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                    Delivery: {new Date(order.delivery_date).toLocaleDateString()}
+                    Delivery: {formatDate(order.delivery_date)}
                   </Text>
                 </View>
 

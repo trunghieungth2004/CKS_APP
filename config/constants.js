@@ -14,8 +14,8 @@ export const API_ENDPOINTS = {
   },
 };
 
-export const CUTOFF_TIME = '18:00'; // 6:00 PM
-export const DISPATCH_TIME = '05:00'; // 5:00 AM
+export const CUTOFF_TIME = '18:00'; 
+export const DISPATCH_TIME = '05:00'; 
 export const DISPUTE_WINDOW_HOURS = 1;
 
 export const DISPUTE_TYPES = {

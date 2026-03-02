@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Alert, RefreshControl, TouchableOpacity } from 
 import { StatusBar } from 'expo-status-bar';
 import { Button, Card } from '../../components';
 import apiService from '../../services/apiService';
+import { formatDate } from '../../utils/validators';
 import styles from './ConfirmDeliveryScreen.styles';
 
 export default function ConfirmDeliveryScreen({ onBack }) {
@@ -100,7 +101,7 @@ export default function ConfirmDeliveryScreen({ onBack }) {
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Delivery Date:</Text>
                 <Text style={styles.infoValue}>
-                  {new Date(order.delivery_date).toLocaleDateString()}
+                  {formatDate(order.delivery_date)}
                 </Text>
               </View>
 

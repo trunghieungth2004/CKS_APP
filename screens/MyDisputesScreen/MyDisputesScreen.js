@@ -4,6 +4,7 @@ import { Text, Appbar, ActivityIndicator, Surface, Chip, Divider, Button } from 
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { formatDateTime } from '../../utils/validators';
 import { DISPUTE_TYPE_LABELS } from '../../config/constants';
 
 export default function MyDisputesScreen({ onNavigate }) {
@@ -98,8 +99,7 @@ export default function MyDisputesScreen({ onNavigate }) {
                       {dispute.order_id}
                     </Text>
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant, marginTop: 2 }}>
-                      {new Date(dispute.created_at).toLocaleDateString()} at{' '}
-                      {new Date(dispute.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatDateTime(dispute.created_at)}
                     </Text>
                   </View>
                   <Chip
@@ -185,8 +185,7 @@ export default function MyDisputesScreen({ onNavigate }) {
                             Resolved by: {dispute.resolved_by}
                           </Text>
                           <Text variant="bodySmall" style={{ color: paperTheme.colors.onPrimaryContainer, opacity: 0.7 }}>
-                            Date: {new Date(dispute.resolved_at).toLocaleDateString()} at{' '}
-                            {new Date(dispute.resolved_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            Date: {formatDateTime(dispute.resolved_at)}
                           </Text>
                         </Surface>
                       </View>

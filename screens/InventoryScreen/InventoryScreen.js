@@ -4,6 +4,7 @@ import { Text, Appbar, ActivityIndicator, Surface, Chip, Searchbar, IconButton, 
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { formatDate, formatDateTime } from '../../utils/validators';
 
 export default function InventoryScreen() {
   const { paperTheme } = useTheme();
@@ -139,7 +140,7 @@ export default function InventoryScreen() {
                         Expires
                       </Text>
                       <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                        {new Date(item.expiration_date).toLocaleDateString()}
+                        {formatDate(item.expiration_date)}
                       </Text>
                     </View>
                   )}
@@ -150,7 +151,7 @@ export default function InventoryScreen() {
                         Last Updated
                       </Text>
                       <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                        {new Date(item.last_updated).toLocaleString()}
+                        {formatDateTime(item.last_updated)}
                       </Text>
                     </View>
                   )}

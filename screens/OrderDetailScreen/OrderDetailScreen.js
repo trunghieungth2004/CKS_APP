@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import { CustomDialog } from '../../components';
 import apiService from '../../services/apiService';
+import { formatDate, formatDateTime } from '../../utils/validators';
 import { DISPUTE_WINDOW_HOURS } from '../../config/constants';
 import DisputeModal from './DisputeModal';
 
@@ -33,6 +34,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
   const loadOrderDetails = async () => {
     setLoading(true);
     const result = await apiService.post('/api/order/one', { order_id: orderId });
+    console.log('Load Order Details Result:', result);
 
     if (result.success && result.data.data) {
       const orderData = result.data.data;
@@ -204,7 +206,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
                 Delivery Date
               </Text>
               <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                {new Date(order.delivery_date).toLocaleDateString()}
+                {formatDate(order.delivery_date)}
               </Text>
             </View>
 
@@ -213,7 +215,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
                 Created
               </Text>
               <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                {new Date(order.created_at).toLocaleString()}
+                {formatDateTime(order.created_at)}
               </Text>
             </View>
 
@@ -345,7 +347,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
                       </Text>
                     )}
                     <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                      {new Date(entry.created_at).toLocaleString()}
+                      {formatDateTime(entry.created_at)}
                     </Text>
                   </View>
                   
