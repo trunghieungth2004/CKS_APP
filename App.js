@@ -224,7 +224,7 @@ function AppContent() {
         case 'inventory':
           return <InventoryScreen />;
         case 'disputes':
-          return <DisputesScreen />;
+          return <DisputesScreen onNavigate={handleNavigate} />;
         case 'settings':
           return <SettingsScreen user={user} onLogout={handleLogout} />;
         default:

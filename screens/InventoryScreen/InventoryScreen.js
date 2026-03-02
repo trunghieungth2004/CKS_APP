@@ -68,18 +68,6 @@ export default function InventoryScreen() {
     setSelectedProduct(null);
   };
 
-  const getStockStatusColor = (quantity) => {
-    if (quantity === 0) return paperTheme.colors.error;
-    if (quantity < 10) return paperTheme.colors.warning || '#FF9800';
-    return paperTheme.colors.success || '#4CAF50';
-  };
-
-  const getStockStatusLabel = (quantity) => {
-    if (quantity === 0) return 'Out of Stock';
-    if (quantity < 10) return 'Low Stock';
-    return 'In Stock';
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <StatusBar style="auto" />
@@ -133,14 +121,6 @@ export default function InventoryScreen() {
                       {item.product_name}
                     </Text>
                   </View>
-                  <Chip
-                    mode="flat"
-                    compact
-                    style={{ backgroundColor: getStockStatusColor(item.quantity) }}
-                    textStyle={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}
-                  >
-                    {getStockStatusLabel(item.quantity)}
-                  </Chip>
                 </View>
 
                 <View style={styles.cardContent}>

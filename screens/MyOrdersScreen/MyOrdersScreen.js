@@ -69,7 +69,6 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
 
     if (result.success && result.data.data) {
       const ordersData = result.data.data;
-      setOrders(ordersData);
       
       const allProductIds = new Set();
       ordersData.forEach(order => {
@@ -84,6 +83,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
         }
       }
       setProducts(productMap);
+      setOrders(ordersData);
     } else {
       setDialog({ visible: true, title: 'Error', message: 'Failed to load orders', type: 'error', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
     }

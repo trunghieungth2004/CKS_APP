@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, Appbar, ActivityIndicator, Surface, Chip, Divider } from 'react-native-paper';
+import { Text, Appbar, ActivityIndicator, Surface, Chip, Divider, Button } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
 import { DISPUTE_TYPE_LABELS } from '../../config/constants';
 
-export default function MyDisputesScreen() {
+export default function MyDisputesScreen({ onNavigate }) {
   const { paperTheme } = useTheme();
   const [disputes, setDisputes] = useState([]);
   const [expandedDispute, setExpandedDispute] = useState(null);
@@ -189,6 +189,22 @@ export default function MyDisputesScreen() {
                             {new Date(dispute.resolved_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </Text>
                         </Surface>
+                      </View>
+                    )}
+
+                    {onNavigate && (
+                      <View style={styles.detailsSection}>
+                        <Button
+                          mode="contained"
+                          icon="open-in-new"
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            onNavigate('OrderDetail', { orderId: dispute.order_id });
+                          }}
+                          style={{ borderRadius: 8 }}
+                        >
+                          View Order
+                        </Button>
                       </View>
                     )}
                   </>
