@@ -231,6 +231,10 @@ export default function RawMaterialQCScreen({ onBack }) {
           {snackbar.message}
         </Text>
       </Snackbar>
+
+      {(processing || qcDialog.visible) && (
+        <View style={styles.backdrop} pointerEvents="auto" />
+      )}
     </View>
   );
 }
@@ -273,5 +277,14 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
 });

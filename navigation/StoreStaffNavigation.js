@@ -20,6 +20,7 @@ export const StoreStaffNavigation = ({
   onNavigateTab,
   onStatusChange,
   onLogout,
+  onRefreshStoreInfo,
 }) => {
   if (currentScreen === 'OrderDetail' && screenParams.orderId) {
     return (
@@ -27,6 +28,7 @@ export const StoreStaffNavigation = ({
         orderId={screenParams.orderId} 
         onBack={onBack} 
         onNavigateTab={onNavigateTab} 
+        onRefreshStoreInfo={onRefreshStoreInfo}
       />
     );
   }
@@ -38,10 +40,11 @@ export const StoreStaffNavigation = ({
           onNavigate={onNavigate} 
           initialStatus={ordersInitialStatus} 
           onStatusChange={() => onStatusChange(null)} 
+          onRefreshStoreInfo={onRefreshStoreInfo}
         />
       );
     case 'create':
-      return <CreateOrderScreen onNavigateTab={onNavigateTab} storeInfo={storeInfo} />;
+      return <CreateOrderScreen onNavigateTab={onNavigateTab} storeInfo={storeInfo} onRefreshStoreInfo={onRefreshStoreInfo} />;
     case 'inventory':
       return <StoreInventoryScreen />;
     case 'disputes':
@@ -54,6 +57,7 @@ export const StoreStaffNavigation = ({
           onNavigate={onNavigate} 
           initialStatus={ordersInitialStatus} 
           onStatusChange={() => onStatusChange(null)} 
+          onRefreshStoreInfo={onRefreshStoreInfo}
         />
       );
   }

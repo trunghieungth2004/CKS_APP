@@ -18,7 +18,7 @@ const STATUS_COLORS = {
   OR105: '#FF3B30',
 };
 
-export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
+export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRefreshStoreInfo }) {
   const { paperTheme } = useTheme();
   const [order, setOrder] = useState(null);
   const [products, setProducts] = useState({});
@@ -97,8 +97,9 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
     
     setCancelling(false);
     
-    if (result.success) {
-      setDialog({
+    if (result.success) {      if (onRefreshStoreInfo) {
+        await onRefreshStoreInfo();
+      }      setDialog({
         visible: true,
         title: 'Order Cancelled',
         message: 'The order has been successfully cancelled.',
@@ -414,6 +415,10 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab }) {
         confirmText={dialog.confirmText}
         cancelText={dialog.cancelText}
       />
+
+      {(cancelling || dialog.visible || disputeModalVisible) && (
+        <View style={styles.backdrop} pointerEvents="auto" />
+      )}
     </View>
   );
 }
@@ -543,5 +548,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 4,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
 });

@@ -126,6 +126,10 @@ export default function SettingsScreen({ user, storeInfo, onLogout }) {
         confirmText={dialog.confirmText}
         cancelText={dialog.cancelText}
       />
+
+      {dialog.visible && (
+        <View style={styles.backdrop} pointerEvents="none" />
+      )}
     </View>
   );
 }
@@ -159,5 +163,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     marginTop: 16,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
 });

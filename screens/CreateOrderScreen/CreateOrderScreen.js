@@ -10,7 +10,7 @@ import apiService from '../../services/apiService';
 import { en, registerTranslation } from 'react-native-paper-dates';
 registerTranslation('en', en);
 
-export default function CreateOrderScreen({ onNavigateTab, storeInfo }) {
+export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshStoreInfo }) {
   const { paperTheme } = useTheme();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -192,6 +192,9 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo }) {
     setSubmitting(false);
 
     if (result.success) {
+      if (onRefreshStoreInfo) {
+        await onRefreshStoreInfo();
+      }
       setDialog({ 
         visible: true, 
         title: 'Success', 
@@ -518,6 +521,10 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo }) {
         onConfirm={dialog.onConfirm}
         showCancel={dialog.showCancel}
       />
+
+      {(submitting || dialog.visible) && (
+        <View style={styles.backdrop} pointerEvents={submitting ? 'auto' : 'none'} />
+      )}
     </View>
   );
 }
@@ -674,5 +681,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
     borderRadius: 8,
     marginBottom: 8,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
 });

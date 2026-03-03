@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Alert, AppState, BackHandler } from 'react-native';
 import { PaperProvider, Text, Surface, Appbar, ActivityIndicator } from 'react-native-paper';
-import { LoginScreen, DashboardScreen } from './screens';
+import { LoginScreen, DashboardScreen, SettingsScreen} from './screens';
 import { BottomNavigation, Snackbar } from './components';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { StoreStaffNavigation, STORE_STAFF_TABS, CKStaffNavigation, CK_STAFF_TABS } from './navigation';
@@ -19,6 +19,8 @@ function AppContent() {
   const [screenParams, setScreenParams] = useState({});
   const [ordersInitialStatus, setOrdersInitialStatus] = useState(null);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'info' });
+  const fetchStoreInfoRef = useRef(false);
+  const lastFetchTimeRef = useRef(0);
 
   useEffect(() => {
     loadAuthData();
@@ -35,6 +37,34 @@ function AppContent() {
 
     return () => clearInterval(interval);
   }, [token]);
+
+  useEffect(() => {
+    if (!user || !token || user.role_id !== 4) return;
+
+    fetchStoreInfo();
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        fetchStoreInfo();
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, [user, token]);
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (currentScreen !== 'Dashboard') {
+        handleBack();
+        return true;
+      }
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, [currentScreen]);
 
   const verifyCurrentToken = async () => {
     if (!token) return;
@@ -54,6 +84,32 @@ function AppContent() {
     }
   };
 
+  const fetchStoreInfo = async (force = false) => {
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastFetchTimeRef.current;
+    
+    if (!force && (fetchStoreInfoRef.current || timeSinceLastFetch < 30000)) {
+      return;
+    }
+
+    fetchStoreInfoRef.current = true;
+    lastFetchTimeRef.current = now;
+
+    try {
+      const storeInfoResult = await apiService.post('/api/user/store-info', {});
+      if (storeInfoResult.success && storeInfoResult.data.data) {
+        setStoreInfo(storeInfoResult.data.data);
+        await storage.setItem('storeInfo', storeInfoResult.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching store info:', error);
+    } finally {
+      setTimeout(() => {
+        fetchStoreInfoRef.current = false;
+      }, 1000);
+    }
+  };
+
   const showMessage = (message, type = 'info') => {
     setSnackbar({ visible: true, message, type });
   };
@@ -67,7 +123,6 @@ function AppContent() {
       const savedUser = await storage.getItem('user');
       const savedToken = await storage.getItem('token');
       const savedStoreInfo = await storage.getItem('storeInfo');
-
       if (savedUser && savedToken) {
         setUser(savedUser);
         setToken(savedToken);
@@ -76,7 +131,6 @@ function AppContent() {
           setStoreInfo(savedStoreInfo);
         }
         
-        // Set default tab based on role
         if (savedUser.role_id === 4) {
           setCurrentTab('orders');
         } else if (savedUser.role_id === 1) {
@@ -101,20 +155,11 @@ function AppContent() {
     await storage.setItem('user', authData.user);
     await storage.setItem('token', authData.token);
 
-    // Set default tab based on role
     if (authData.user.role_id === 4) {
-      // Store Staff: default to orders tab
       setCurrentTab('orders');
-      const storeInfoResult = await apiService.post('/api/user/store-info', {});
-      if (storeInfoResult.success && storeInfoResult.data.data) {
-        setStoreInfo(storeInfoResult.data.data);
-        await storage.setItem('storeInfo', storeInfoResult.data.data);
-      }
     } else if (authData.user.role_id === 1) {
-      // CK Staff: default to QC tab
       setCurrentTab('qc');
     } else {
-      // Other roles: default to settings
       setCurrentTab('settings');
     }
   };
@@ -179,7 +224,6 @@ function AppContent() {
   }
 
   const renderCurrentTab = () => {
-    // Store Staff (role_id 4)
     if (user.role_id === 4) {
       return (
         <StoreStaffNavigation
@@ -194,6 +238,7 @@ function AppContent() {
           onNavigateTab={handleNavigateTab}
           onStatusChange={setOrdersInitialStatus}
           onLogout={handleLogout}
+          onRefreshStoreInfo={fetchStoreInfo}
         />
       );
     }
@@ -215,7 +260,6 @@ function AppContent() {
       );
     }
 
-    // Fallback for other roles (Dashboard + Settings)
     switch (currentTab) {
       case 'settings':
         return <SettingsScreen user={user} storeInfo={storeInfo} onLogout={handleLogout} />;

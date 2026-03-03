@@ -36,7 +36,7 @@ const STATUS_NAMES = {
   OR105: 'CANCELLED',
 };
 
-export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChange }) {
+export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChange, onRefreshStoreInfo }) {
   const { paperTheme } = useTheme();
   const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'OR100');
   const [orders, setOrders] = useState([]);
@@ -157,8 +157,9 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
     
     setCancellingOrderId(null);
     
-    if (result.success) {
-      setDialog({
+    if (result.success) {      if (onRefreshStoreInfo) {
+        await onRefreshStoreInfo();
+      }      setDialog({
         visible: true,
         title: 'Order Cancelled',
         message: 'The order has been successfully cancelled.',
@@ -345,6 +346,10 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
           }}
         />
       )}
+
+      {(cancellingOrderId || dialog.visible || disputeOrder) && (
+        <View style={styles.backdrop} pointerEvents="auto" />
+      )}
     </View>
   );
 }
@@ -413,5 +418,14 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     margin: 0,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
 });
