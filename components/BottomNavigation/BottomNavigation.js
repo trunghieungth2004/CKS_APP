@@ -4,63 +4,12 @@ import { Text, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
-const BottomNavigation = ({ currentTab, onTabChange, userRole }) => {
+const BottomNavigation = ({ currentTab, onTabChange, tabs }) => {
   const { paperTheme } = useTheme();
 
-  const getTabsByRole = () => {
-    switch (userRole) {
-      case 4:
-        return [
-          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
-          { key: 'create', title: 'Create', icon: 'plus-circle' },
-          { key: 'inventory', title: 'Inventory', icon: 'package-variant' },
-          { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
-          { key: 'settings', title: 'Settings', icon: 'cog' },
-        ];
-      
-      case 1:
-        return [
-          { key: 'qc', title: 'QC', icon: 'quality-high' },
-          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
-          { key: 'history', title: 'History', icon: 'history' },
-          { key: 'settings', title: 'Settings', icon: 'cog' },
-        ];
-      
-      case 2:
-        return [
-          { key: 'qc', title: 'QC', icon: 'quality-high' },
-          { key: 'dispatch', title: 'Dispatch', icon: 'truck-delivery' },
-          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
-          { key: 'settings', title: 'Settings', icon: 'cog' },
-        ];
-      
-      case 3:
-        return [
-          { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
-          { key: 'products', title: 'Products', icon: 'folder-cog' },
-          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
-          { key: 'settings', title: 'Settings', icon: 'cog' },
-        ];
-      
-      case 0:
-        return [
-          { key: 'dashboard', title: 'Dashboard', icon: 'view-dashboard' },
-          { key: 'users', title: 'Users', icon: 'account-group' },
-          { key: 'reports', title: 'Reports', icon: 'chart-bar' },
-          { key: 'settings', title: 'Settings', icon: 'cog' },
-        ];
-      
-      default:
-        return [
-          { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
-          { key: 'create', title: 'Create', icon: 'plus-circle' },
-          { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
-          { key: 'settings', title: 'Settings', icon: 'cog' },
-        ];
-    }
-  };
-
-  const tabs = getTabsByRole();
+  if (!tabs || tabs.length === 0) {
+    return null;
+  }
 
   return (
     <Surface style={[styles.container, { backgroundColor: paperTheme.colors.surface }]} elevation={3}>

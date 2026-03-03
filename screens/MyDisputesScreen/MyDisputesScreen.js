@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet, Pressable } from 'react-native';
 import { Text, Appbar, ActivityIndicator, Surface, Chip, Divider, Button } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
@@ -108,7 +108,7 @@ export default function MyDisputesScreen({ onNavigate }) {
           </View>
         ) : (
           disputes.map((dispute) => (
-            <TouchableOpacity key={dispute.dispute_id} onPress={() => toggleExpand(dispute.dispute_id)}>
+            <Pressable key={dispute.dispute_id} onPress={() => toggleExpand(dispute.dispute_id)}>
               <Surface style={styles.disputeCard} elevation={1}>
                 <View style={styles.disputeHeader}>
                   <View style={{ flex: 1 }}>
@@ -157,11 +157,11 @@ export default function MyDisputesScreen({ onNavigate }) {
                       <Text variant="titleSmall" style={{ fontWeight: 'bold', marginBottom: 8 }}>
                         Reason
                       </Text>
-                      <Surface style={[styles.reasonBox, { backgroundColor: paperTheme.colors.surfaceVariant }]} elevation={0}>
+                      <View style={[styles.reasonBox, { backgroundColor: paperTheme.colors.surfaceVariant }]}>
                         <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
                           {dispute.reason}
                         </Text>
-                      </Surface>
+                      </View>
                     </View>
 
                     <View style={styles.detailsSection}>
@@ -191,9 +191,8 @@ export default function MyDisputesScreen({ onNavigate }) {
                         <Text variant="titleSmall" style={{ fontWeight: 'bold', marginBottom: 8 }}>
                           Resolution
                         </Text>
-                        <Surface
+                        <View
                           style={[styles.resolutionBox, { backgroundColor: paperTheme.colors.primaryContainer }]}
-                          elevation={0}
                         >
                           <Text variant="bodySmall" style={{ color: paperTheme.colors.onPrimaryContainer, marginBottom: 8 }}>
                             {dispute.resolution_notes}
@@ -204,7 +203,7 @@ export default function MyDisputesScreen({ onNavigate }) {
                           <Text variant="bodySmall" style={{ color: paperTheme.colors.onPrimaryContainer, opacity: 0.7 }}>
                             Date: {formatDateTime(dispute.resolved_at)}
                           </Text>
-                        </Surface>
+                        </View>
                       </View>
                     )}
 
@@ -232,7 +231,7 @@ export default function MyDisputesScreen({ onNavigate }) {
                   </Text>
                 </View>
               </Surface>
-            </TouchableOpacity>
+            </Pressable>
           ))
         )}
       </ScrollView>
@@ -259,6 +258,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 12,
     padding: 16,
+    overflow: 'hidden',
   },
   disputeHeader: {
     flexDirection: 'row',

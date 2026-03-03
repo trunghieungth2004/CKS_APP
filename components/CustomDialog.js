@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Dialog, Portal, Button, Text } from 'react-native-paper';
+import { Dialog, Portal, Button, Text, TextInput } from 'react-native-paper';
 import { useTheme } from '../context/ThemeContext';
 
 export default function CustomDialog({ 
@@ -13,6 +13,8 @@ export default function CustomDialog({
   confirmText = 'OK',
   cancelText = 'Cancel',
   showCancel = false,
+  showInput = false,
+  inputProps = {},
 }) {
   const { paperTheme } = useTheme();
 
@@ -58,6 +60,13 @@ export default function CustomDialog({
           <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurface }}>
             {message}
           </Text>
+          {showInput && (
+            <TextInput
+              mode="outlined"
+              style={{ marginTop: 16 }}
+              {...inputProps}
+            />
+          )}
         </Dialog.Content>
         <Dialog.Actions>
           {showCancel && (

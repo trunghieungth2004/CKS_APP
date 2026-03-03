@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
 import { formatDate, formatDateTime } from '../../utils/validators';
 
-export default function InventoryScreen() {
+export default function StoreInventoryScreen() {
   const { paperTheme } = useTheme();
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);

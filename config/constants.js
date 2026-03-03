@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://192.168.240.1:5001/swd-cks/us-central1/app';
+export const API_BASE_URL = 'https://app-thvt3ndwfq-uc.a.run.app';
 
 export const API_ENDPOINTS = {
   AUTH: {

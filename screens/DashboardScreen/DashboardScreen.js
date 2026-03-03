@@ -61,6 +61,11 @@ export default function DashboardScreen({ user, onNavigate }) {
               variant="warning"
             />
             <MenuButton
+              title="CK Inventory"
+              subtitle="View raw material stock levels"
+              onPress={() => onNavigate('CKInventory')}
+            />
+            <MenuButton
               title="All Orders"
               subtitle="View all system orders"
               onPress={() => onNavigate('AllOrders')}
