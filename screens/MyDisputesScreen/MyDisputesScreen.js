@@ -4,6 +4,7 @@ import { Text, Appbar, ActivityIndicator, Surface, Chip, Divider, Button } from 
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/constants';
 import { formatDateTime } from '../../utils/validators';
 import { DISPUTE_TYPE_LABELS } from '../../config/constants';
 
@@ -21,7 +22,7 @@ export default function MyDisputesScreen({ onNavigate }) {
 
   const loadDisputes = async () => {
     setLoading(true);
-    const result = await apiService.post('/api/dispute/my-disputes', {});
+    const result = await apiService.post(API_ENDPOINTS.DISPUTE.MY_DISPUTES, {});
 
     if (result.success && result.data.data) {
       const disputesData = result.data.data;
@@ -33,7 +34,7 @@ export default function MyDisputesScreen({ onNavigate }) {
       
       const productMap = {};
       for (const productId of allProductIds) {
-        const result = await apiService.post('/api/product/one', { productId });
+        const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId });
         if (result.success && result.data.data) {
           productMap[productId] = result.data.data;
         }

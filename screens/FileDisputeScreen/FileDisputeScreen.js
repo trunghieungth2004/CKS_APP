@@ -4,6 +4,7 @@ import { Text, Appbar, ActivityIndicator, Surface, Chip, Button as PaperButton, 
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/constants';
 import { formatDate } from '../../utils/validators';
 import { DISPUTE_TYPES, DISPUTE_TYPE_LABELS, DISPUTE_TYPE_DESCRIPTIONS, DISPUTE_WINDOW_HOURS } from '../../config/constants';
 
@@ -24,7 +25,7 @@ export default function FileDisputeScreen() {
 
   const loadDeliveredOrders = async () => {
     setLoading(true);
-    const result = await apiService.post('/api/order/my-orders', {
+    const result = await apiService.post(API_ENDPOINTS.ORDER.MY_ORDERS, {
       order_status_id: 'OR104'
     });
     setLoading(false);
@@ -70,7 +71,7 @@ export default function FileDisputeScreen() {
     
     const productDetails = {};
     for (const item of order.items) {
-      const result = await apiService.post('/api/product/one', { productId: item.product_id });
+      const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId: item.product_id });
       if (result.success && result.data.data) {
         productDetails[item.product_id] = result.data.data;
       }
@@ -142,7 +143,7 @@ export default function FileDisputeScreen() {
 
     setSubmitting(true);
 
-    const result = await apiService.post('/api/dispute', {
+    const result = await apiService.post(API_ENDPOINTS.DISPUTE.CREATE, {
       order_id: selectedOrder.order_id,
       items: items.map(item => ({
         product_id: item.product_id,

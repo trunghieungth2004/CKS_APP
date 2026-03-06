@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://app-thvt3ndwfq-uc.a.run.app';
+export const API_BASE_URL = 'http://192.168.240.1:5001/swd-cks/us-central1/app';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -8,9 +8,56 @@ export const API_ENDPOINTS = {
   },
   PRODUCT: {
     ALL: '/api/product/all',
+    ONE: '/api/product/one',
+    CREATE: '/api/product/create',
+  },
+  RECIPE: {
+    ALL: '/api/recipe/all',
+    ONE: '/api/recipe/one',
+    CREATE: '/api/recipe/create',
+  },
+  RAW_MATERIAL: {
+    ALL: '/api/raw-material/all',
   },
   ORDER: {
     CREATE: '/api/order/create',
+    ALL: '/api/order/all',
+    ONE: '/api/order/one',
+    MY_ORDERS: '/api/order/my-orders',
+    UPDATE_STATUS: '/api/order/update-status',
+  },
+  INVENTORY: {
+    CK: '/api/inventory/ck',
+    STORE: '/api/inventory/store',
+    RISK_POOL: '/api/inventory/store/risk-pool',
+  },
+  RAW_BATCH: {
+    ALL: '/api/raw-batch/all',
+    ONE: '/api/raw-batch/one',
+  },
+  COOKED_BATCH: {
+    ALL: '/api/cooked-batch/all',
+    ONE: '/api/cooked-batch/one',
+    BY_ORDER: '/api/cooked-batch/by-order',
+  },
+  RAW_QC: {
+    PENDING: '/api/raw-qc/pending',
+    PERFORM: '/api/raw-qc/perform',
+  },
+  COOKED_QC: {
+    PENDING: '/api/cooked-qc/pending',
+    PERFORM: '/api/cooked-qc/perform',
+    RISK_POOL_SEARCH: '/api/cooked-qc/risk-pool/search',
+    RISK_POOL_TRANSFER: '/api/cooked-qc/risk-pool/transfer',
+  },
+  DISPUTE: {
+    CREATE: '/api/dispute',
+    MY_DISPUTES: '/api/dispute/my-disputes',
+    ALL: '/api/dispute/all',
+    RESOLVE: '/api/dispute/resolve',
+  },
+  USER: {
+    STORE_INFO: '/api/user/store-info',
   },
 };
 

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
-import { Text, Appbar, ActivityIndicator, Surface, Chip, Searchbar, IconButton, Divider } from 'react-native-paper';
+import { Text, Appbar, ActivityIndicator, Surface, Chip, Searchbar, IconButton, Divider, SegmentedButtons } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/constants';
 import { formatDate, formatDateTime } from '../../utils/validators';
+import RiskPoolInventory from './RiskPoolInventory';
 
 export default function StoreInventoryScreen() {
   const { paperTheme } = useTheme();
+  const [selectedTab, setSelectedTab] = useState('inventory');
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -23,7 +26,7 @@ export default function StoreInventoryScreen() {
 
   const loadInventory = async () => {
     setLoading(true);
-    const result = await apiService.post('/api/inventory/store');
+    const result = await apiService.post(API_ENDPOINTS.INVENTORY.STORE);
     setLoading(false);
     setRefreshing(false);
 
@@ -53,7 +56,7 @@ export default function StoreInventoryScreen() {
     setProductDetailVisible(true);
     setLoadingDetail(true);
     
-    const result = await apiService.post('/api/product/one', { productId: product.product_id });
+    const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId: product.product_id });
     
     if (result.success && result.data.data) {
       setProductDetail(result.data.data);
@@ -69,6 +72,39 @@ export default function StoreInventoryScreen() {
     setSelectedProduct(null);
   };
 
+  if (selectedTab === 'riskpool') {
+    return (
+      <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+        <StatusBar style="auto" />
+        
+        <Appbar.Header elevated>
+          <Appbar.Content title="Store Inventory" titleStyle={{ fontWeight: 'bold' }} />
+        </Appbar.Header>
+
+        <View style={styles.tabContainer}>
+          <SegmentedButtons
+            value={selectedTab}
+            onValueChange={setSelectedTab}
+            buttons={[
+              {
+                value: 'inventory',
+                label: 'Inventory',
+                icon: 'package-variant',
+              },
+              {
+                value: 'riskpool',
+                label: 'Risk Pool',
+                icon: 'swap-horizontal',
+              },
+            ]}
+          />
+        </View>
+
+        <RiskPoolInventory />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
       <StatusBar style="auto" />
@@ -76,6 +112,25 @@ export default function StoreInventoryScreen() {
       <Appbar.Header elevated>
         <Appbar.Content title="Store Inventory" titleStyle={{ fontWeight: 'bold' }} />
       </Appbar.Header>
+
+      <View style={styles.tabContainer}>
+        <SegmentedButtons
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          buttons={[
+            {
+              value: 'inventory',
+              label: 'Inventory',
+              icon: 'package-variant',
+            },
+            {
+              value: 'riskpool',
+              label: 'Risk Pool',
+              icon: 'swap-horizontal',
+            },
+          ]}
+        />
+      </View>
 
       <Searchbar
         placeholder="Search inventory..."
@@ -258,9 +313,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  tabContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
   searchbar: {
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginBottom: 8,
   },
   scrollContent: {
     padding: 16,

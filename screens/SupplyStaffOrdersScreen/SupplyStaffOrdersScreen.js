@@ -9,28 +9,29 @@ import { formatDate } from '../../utils/validators';
 import { API_ENDPOINTS } from '../../config/constants';
 
 const STATUS_TABS = [
-  { value: 'OR101', label: 'Production' },
   { value: 'OR102', label: 'Staged' },
+  { value: 'OR103', label: 'Dispatched' },
 ];
 
 const STATUS_COLORS = {
-  OR101: '#5856D6',
   OR102: '#007AFF',
+  OR103: '#34C759',
 };
 
 const STATUS_NAMES = {
-  OR101: 'IN PRODUCTION',
   OR102: 'STAGED',
+  OR103: 'DISPATCHED',
 };
 
-export default function CKOrdersScreen({ onNavigate, initialStatus, onStatusChange }) {
+export default function SupplyStaffOrdersScreen({ onNavigate, initialStatus, onStatusChange }) {
   const { paperTheme } = useTheme();
-  const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'OR101');
+  const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'OR102');
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [updating, setUpdating] = useState(null);
+  const [dispatching, setDispatching] = useState(null);
   const [dialog, setDialog] = useState({ visible: false, title: '', message: '', type: 'info', onConfirm: null, showCancel: false, orderId: null });
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function CKOrdersScreen({ onNavigate, initialStatus, onStatusChan
       
       const productMap = {};
       for (const productId of allProductIds) {
-        const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId });
+        const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId: productId });
         if (result.success && result.data.data) {
           productMap[productId] = result.data.data;
         }
@@ -97,42 +98,82 @@ export default function CKOrdersScreen({ onNavigate, initialStatus, onStatusChan
 
   const handleOrderPress = (orderId) => {
     if (onNavigate) {
-      onNavigate('CKOrderDetail', { orderId });
+      onNavigate('SupplyOrderDetail', { orderId });
     }
   };
 
-  const handleUpdateToStaged = (orderId, event) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    setDialog({
-      visible: true,
-      title: 'Update to Staged',
-      message: 'Mark this order as staged and ready for stage?',
-      type: 'confirm',
-      onConfirm: () => confirmUpdateToStaged(orderId),
-      showCancel: true,
-      confirmText: 'Confirm',
-      orderId: orderId,
-    });
-  };
-
-  const confirmUpdateToStaged = async (orderId) => {
-    setDialog({ ...dialog, visible: false });
-    setUpdating(orderId);
+  const handleDispatchOrder = async (orderId) => {
+    setDispatching(orderId);
     
-    const result = await apiService.post(API_ENDPOINTS.ORDER.UPDATE_STATUS, { 
-      order_id: orderId,
-      order_status_id: "OR102"
+    const batchesResult = await apiService.post(API_ENDPOINTS.COOKED_BATCH.ALL, {
+      order_id: orderId
     });
     
-    setUpdating(null);
-    
-    if (result.success) {
+    if (!batchesResult.success || !batchesResult.data.data) {
+      setDispatching(null);
       setDialog({
         visible: true,
-        title: 'Status Updated',
-        message: 'Order has been moved to staged.',
+        title: 'Error',
+        message: 'Failed to load order batches',
+        type: 'error',
+        onConfirm: () => setDialog({ ...dialog, visible: false }),
+        showCancel: false,
+      });
+      return;
+    }
+    
+    const batches = batchesResult.data.data;
+    const hasPendingBatches = batches.some(batch => batch.qc_status === 'PENDING');
+    
+    if (hasPendingBatches) {
+      setDispatching(null);
+      setDialog({
+        visible: true,
+        title: 'Cannot Dispatch',
+        message: 'All batches must complete QC before dispatching. Some batches are still pending QC.',
+        type: 'error',
+        onConfirm: () => setDialog({ ...dialog, visible: false }),
+        showCancel: false,
+      });
+      return;
+    }
+
+    const hasFailedBatches = batches.some(batch => batch.qc_status === 'FAIL');
+    
+    if (hasFailedBatches) {
+      const failedCount = batches.filter(batch => batch.qc_status === 'FAIL').length;
+      setDialog({
+        visible: true,
+        title: 'Warning: Failed Batches',
+        message: `This order has ${failedCount} failed batch${failedCount > 1 ? 'es' : ''}. The order is incomplete. Are you sure you want to dispatch this order?`,
+        type: 'warning',
+        onConfirm: () => {
+          setDialog({ ...dialog, visible: false });
+          dispatchOrderConfirmed(orderId);
+        },
+        showCancel: true,
+        confirmText: 'Yes, Dispatch',
+        cancelText: 'Cancel',
+      });
+      return;
+    }
+    
+    dispatchOrderConfirmed(orderId);
+  };
+
+  const dispatchOrderConfirmed = async (orderId) => {
+    const response = await apiService.post(API_ENDPOINTS.ORDER.UPDATE_STATUS, {
+      order_id: orderId,
+      order_status_id: 'OR103'
+    });
+    
+    setDispatching(null);
+    
+    if (response.success) {
+      setDialog({
+        visible: true,
+        title: 'Success',
+        message: 'Order dispatched successfully',
         type: 'success',
         onConfirm: () => {
           setDialog({ ...dialog, visible: false });
@@ -141,13 +182,13 @@ export default function CKOrdersScreen({ onNavigate, initialStatus, onStatusChan
         showCancel: false,
       });
     } else {
-      setDialog({ 
-        visible: true, 
-        title: 'Error', 
-        message: result.message || 'Failed to update order status', 
-        type: 'error', 
-        onConfirm: () => setDialog({ ...dialog, visible: false }), 
-        showCancel: false 
+      setDialog({
+        visible: true,
+        title: 'Error',
+        message: response.message || 'Failed to dispatch order',
+        type: 'error',
+        onConfirm: () => setDialog({ ...dialog, visible: false }),
+        showCancel: false,
       });
     }
   };
@@ -265,21 +306,23 @@ export default function CKOrdersScreen({ onNavigate, initialStatus, onStatusChan
                       ${calculateOrderTotal(order).toFixed(2)}
                     </Text>
                   </View>
-
-                  {order.order_status_id === 'OR101' && (
-                    <Button
-                      mode="contained"
-                      onPress={(e) => handleUpdateToStaged(order.order_id, e)}
-                      loading={updating === order.order_id}
-                      disabled={updating === order.order_id}
-                      icon="package-up"
-                      style={styles.stageButton}
-                      contentStyle={{ paddingVertical: 4 }}
-                    >
-                      Move to Staged
-                    </Button>
-                  )}
                 </View>
+
+                {selectedStatus === 'OR102' && (
+                  <Button
+                    mode="contained"
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleDispatchOrder(order.order_id);
+                    }}
+                    disabled={dispatching === order.order_id}
+                    loading={dispatching === order.order_id}
+                    style={{ marginTop: 16 }}
+                    icon="truck-delivery"
+                  >
+                    Dispatch Order
+                  </Button>
+                )}
               </Surface>
             </TouchableOpacity>
           ))
@@ -297,7 +340,7 @@ export default function CKOrdersScreen({ onNavigate, initialStatus, onStatusChan
         confirmText={dialog.confirmText}
       />
 
-      {(updating || dialog.visible) && (
+      {(updating || dialog.visible || dispatching) && (
         <View style={styles.backdrop} pointerEvents="auto" />
       )}
     </View>

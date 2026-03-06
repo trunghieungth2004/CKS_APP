@@ -6,6 +6,10 @@ import { DatePickerModal } from 'react-native-paper-dates';
 import { useTheme } from '../../context/ThemeContext';
 import { Button, CustomDialog } from '../../components';
 import apiService from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/constants';
+import storage from '../../utils/storage';
+
+const DRAFT_ORDER_KEY = 'draftOrder';
 
 import { en, registerTranslation } from 'react-native-paper-dates';
 registerTranslation('en', en);
@@ -29,11 +33,16 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshS
 
   useEffect(() => {
     loadProducts();
+    loadDraftOrder();
   }, []);
+
+  useEffect(() => {
+    saveDraftOrder();
+  }, [addedItems, deliveryDate, notes, creditsToUse]);
 
   const loadProducts = async () => {
     setLoading(true);
-    const result = await apiService.get('/api/product/all');
+    const result = await apiService.get(API_ENDPOINTS.PRODUCT.ALL);
     setLoading(false);
 
     if (result.success && result.data.data) {
@@ -41,6 +50,36 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshS
     } else {
       setDialog({ visible: true, title: 'Error', message: 'Failed to load products', type: 'error', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
     }
+  };
+
+  const loadDraftOrder = async () => {
+    const draft = await storage.getItem(DRAFT_ORDER_KEY);
+    if (draft) {
+      if (draft.addedItems) setAddedItems(draft.addedItems);
+      if (draft.deliveryDate) setDeliveryDate(new Date(draft.deliveryDate));
+      if (draft.notes) setNotes(draft.notes);
+      if (draft.creditsToUse) setCreditsToUse(draft.creditsToUse);
+    }
+  };
+
+  const saveDraftOrder = async () => {
+    const hasItems = Object.keys(addedItems).length > 0;
+    if (hasItems || deliveryDate || notes || creditsToUse) {
+      await storage.setItem(DRAFT_ORDER_KEY, {
+        addedItems,
+        deliveryDate: deliveryDate?.toISOString(),
+        notes,
+        creditsToUse,
+      });
+    }
+  };
+
+  const clearDraftOrder = async () => {
+    await storage.removeItem(DRAFT_ORDER_KEY);
+    setAddedItems({});
+    setDeliveryDate(null);
+    setNotes('');
+    setCreditsToUse('');
   };
 
   const filteredProducts = products.filter(product =>
@@ -99,7 +138,7 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshS
     setProductDetailVisible(true);
     setLoadingDetail(true);
     
-    const result = await apiService.post('/api/product/one', { productId: product.product_id });
+    const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId: product.product_id });
     
     if (result.success && result.data.data) {
       setProductDetail(result.data.data);
@@ -187,7 +226,7 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshS
       orderData.credits_to_use = parseFloat(creditsValue.toFixed(2));
     }
 
-    const result = await apiService.post('/api/order/create', orderData);
+    const result = await apiService.post(API_ENDPOINTS.ORDER.CREATE, orderData);
 
     setSubmitting(false);
 
@@ -195,6 +234,7 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshS
       if (onRefreshStoreInfo) {
         await onRefreshStoreInfo();
       }
+      await storage.removeItem(DRAFT_ORDER_KEY);
       setDialog({ 
         visible: true, 
         title: 'Success', 
@@ -223,6 +263,25 @@ export default function CreateOrderScreen({ onNavigateTab, storeInfo, onRefreshS
       
       <Appbar.Header elevated>
         <Appbar.Content title="Create Order" titleStyle={{ fontWeight: 'bold' }} />
+        {(Object.keys(addedItems).length > 0 || deliveryDate || notes || creditsToUse) && (
+          <Appbar.Action 
+            icon="delete-outline" 
+            onPress={() => {
+              setDialog({
+                visible: true,
+                title: 'Clear Draft',
+                message: 'Are you sure you want to clear all order items?',
+                type: 'confirm',
+                onConfirm: () => {
+                  clearDraftOrder();
+                  setDialog({ ...dialog, visible: false });
+                },
+                showCancel: true,
+                confirmText: 'Clear',
+              });
+            }}
+          />
+        )}
       </Appbar.Header>
 
       <View style={styles.orderDetails}>
@@ -617,6 +676,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
+    paddingVertical: 0,
+    paddingHorizontal: 4,
+    lineHeight: 20,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   footer: {
     position: 'absolute',

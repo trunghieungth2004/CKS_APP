@@ -110,7 +110,7 @@ export default function SettingsScreen({ user, storeInfo, onLogout }) {
 
         <View style={styles.appInfo}>
           <Text variant="bodySmall" style={{ color: paperTheme.colors.outline }}>
-            CKS App v1.0.0 • Material Design
+            CKS App v1.0.0 
           </Text>
         </View>
       </ScrollView>

@@ -4,6 +4,7 @@ import { Text, Appbar, ActivityIndicator, Surface, Chip, Searchbar, Divider } fr
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
+import { API_ENDPOINTS } from '../../config/constants';
 
 export default function CKInventoryScreen({ onBack }) {
   const { paperTheme } = useTheme();
@@ -18,7 +19,7 @@ export default function CKInventoryScreen({ onBack }) {
 
   const loadInventory = async () => {
     setLoading(true);
-    const result = await apiService.post('/api/inventory/ck');
+    const result = await apiService.post(API_ENDPOINTS.INVENTORY.CK);
     setLoading(false);
     setRefreshing(false);
 

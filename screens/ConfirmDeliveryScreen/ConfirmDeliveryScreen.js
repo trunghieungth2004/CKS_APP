@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Button, Card } from '../../components';
 import apiService from '../../services/apiService';
 import { formatDate } from '../../utils/validators';
+import { API_ENDPOINTS } from '../../config/constants';
 import styles from './ConfirmDeliveryScreen.styles';
 
 export default function ConfirmDeliveryScreen({ onBack }) {
@@ -17,7 +18,7 @@ export default function ConfirmDeliveryScreen({ onBack }) {
   }, []);
 
   const loadDispatchedOrders = async () => {
-    const result = await apiService.post('/api/order/my-orders', {});
+    const result = await apiService.post(API_ENDPOINTS.ORDER.MY_ORDERS, {});
     setLoading(false);
     setRefreshing(false);
 
@@ -54,7 +55,7 @@ export default function ConfirmDeliveryScreen({ onBack }) {
   const confirmDelivery = async (orderId) => {
     setConfirming(orderId);
 
-    const result = await apiService.post('/api/order/update-status', {
+    const result = await apiService.post(API_ENDPOINTS.ORDER.UPDATE_STATUS, {
       order_id: orderId,
       new_status_id: 'OR104',
       notes: 'Delivery confirmed by store staff',

@@ -4,9 +4,10 @@ import { PaperProvider, Text, Surface, Appbar, ActivityIndicator } from 'react-n
 import { LoginScreen, DashboardScreen, SettingsScreen} from './screens';
 import { BottomNavigation, Snackbar } from './components';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { StoreStaffNavigation, STORE_STAFF_TABS, CKStaffNavigation, CK_STAFF_TABS } from './navigation';
+import { StoreStaffNavigation, STORE_STAFF_TABS, CKStaffNavigation, CK_STAFF_TABS, SupplyStaffNavigation, SUPPLY_STAFF_TABS, ManagerNavigation, MANAGER_TABS } from './navigation';
 import apiService from './services/apiService';
 import storage from './utils/storage';
+import { API_ENDPOINTS } from './config/constants';
 
 function AppContent() {
   const { theme, paperTheme } = useTheme();
@@ -17,7 +18,9 @@ function AppContent() {
   const [currentTab, setCurrentTab] = useState(null);
   const [currentScreen, setCurrentScreen] = useState('Dashboard');
   const [screenParams, setScreenParams] = useState({});
+  const [navigationStack, setNavigationStack] = useState([]);
   const [ordersInitialStatus, setOrdersInitialStatus] = useState(null);
+  const [qcInitialTab, setQcInitialTab] = useState(null);
   const [snackbar, setSnackbar] = useState({ visible: false, message: '', type: 'info' });
   const fetchStoreInfoRef = useRef(false);
   const lastFetchTimeRef = useRef(0);
@@ -96,7 +99,7 @@ function AppContent() {
     lastFetchTimeRef.current = now;
 
     try {
-      const storeInfoResult = await apiService.post('/api/user/store-info', {});
+      const storeInfoResult = await apiService.post(API_ENDPOINTS.USER.STORE_INFO, {});
       if (storeInfoResult.success && storeInfoResult.data.data) {
         setStoreInfo(storeInfoResult.data.data);
         await storage.setItem('storeInfo', storeInfoResult.data.data);
@@ -135,6 +138,10 @@ function AppContent() {
           setCurrentTab('orders');
         } else if (savedUser.role_id === 1) {
           setCurrentTab('qc');
+        } else if (savedUser.role_id === 2) {
+          setCurrentTab('qc');
+        } else if (savedUser.role_id === 3) {
+          setCurrentTab('products');
         } else {
           setCurrentTab('settings');
         }
@@ -155,10 +162,17 @@ function AppContent() {
     await storage.setItem('user', authData.user);
     await storage.setItem('token', authData.token);
 
+    setCurrentScreen('Dashboard');
+    setNavigationStack([]);
+
     if (authData.user.role_id === 4) {
       setCurrentTab('orders');
     } else if (authData.user.role_id === 1) {
       setCurrentTab('qc');
+    } else if (authData.user.role_id === 2) {
+      setCurrentTab('qc');
+    } else if (authData.user.role_id === 3) {
+      setCurrentTab('products');
     } else {
       setCurrentTab('settings');
     }
@@ -171,15 +185,18 @@ function AppContent() {
     apiService.clearToken();
     setCurrentScreen('Dashboard');
     setScreenParams({});
+    setNavigationStack([]);
     setCurrentTab('orders');
     hideSnackbar();
 
     await storage.removeItem('user');
     await storage.removeItem('token');
     await storage.removeItem('storeInfo');
+    await storage.removeItem('draftOrder');
   };
 
   const handleNavigate = (screen, params = {}) => {
+    setNavigationStack([...navigationStack, { screen: currentScreen, params: screenParams }]);
     setCurrentScreen(screen);
     setScreenParams(params);
   };
@@ -190,16 +207,25 @@ function AppContent() {
       setOrdersInitialStatus(status);
     }
     setCurrentScreen('Dashboard');
+    setNavigationStack([]);
   };
 
   const handleBack = () => {
-    setCurrentScreen('Dashboard');
-    setScreenParams({});
+    if (navigationStack.length > 0) {
+      const previous = navigationStack[navigationStack.length - 1];
+      setNavigationStack(navigationStack.slice(0, -1));
+      setCurrentScreen(previous.screen);
+      setScreenParams(previous.params);
+    } else {
+      setCurrentScreen('Dashboard');
+      setScreenParams({});
+    }
   };
 
   const handleTabChange = (tab) => {
     setCurrentTab(tab);
     setCurrentScreen('Dashboard');
+    setNavigationStack([]);
   };
 
   if (loading) {
@@ -243,10 +269,43 @@ function AppContent() {
       );
     }
 
-    // CK Staff (role_id 1)
     if (user.role_id === 1) {
       return (
         <CKStaffNavigation
+          currentTab={currentTab}
+          currentScreen={currentScreen}
+          screenParams={screenParams}
+          ordersInitialStatus={ordersInitialStatus}
+          user={user}
+          onNavigate={handleNavigate}
+          onBack={handleBack}
+          onStatusChange={setOrdersInitialStatus}
+          onLogout={handleLogout}
+        />
+      );
+    }
+
+    if (user.role_id === 2) {
+      return (
+        <SupplyStaffNavigation
+          currentTab={currentTab}
+          currentScreen={currentScreen}
+          screenParams={screenParams}
+          ordersInitialStatus={ordersInitialStatus}
+          qcInitialTab={qcInitialTab}
+          user={user}
+          onNavigate={handleNavigate}
+          onBack={handleBack}
+          onStatusChange={setOrdersInitialStatus}
+          onQcTabChange={setQcInitialTab}
+          onLogout={handleLogout}
+        />
+      );
+    }
+
+    if (user.role_id === 3) {
+      return (
+        <ManagerNavigation
           currentTab={currentTab}
           currentScreen={currentScreen}
           screenParams={screenParams}
@@ -271,6 +330,8 @@ function AppContent() {
   const getTabsForRole = () => {
     if (user.role_id === 4) return STORE_STAFF_TABS;
     if (user.role_id === 1) return CK_STAFF_TABS;
+    if (user.role_id === 2) return SUPPLY_STAFF_TABS;
+    if (user.role_id === 3) return MANAGER_TABS;
     return [{ key: 'settings', title: 'Settings', icon: 'cog' }];
   };
 

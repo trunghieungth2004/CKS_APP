@@ -3,7 +3,7 @@ import { View, ScrollView, Alert, StyleSheet, TouchableOpacity, TextInput, Modal
 import { Text, Surface, ActivityIndicator, Divider, Menu, IconButton, Button as PaperButton } from 'react-native-paper';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
-import { DISPUTE_TYPES, DISPUTE_TYPE_LABELS, DISPUTE_TYPE_DESCRIPTIONS } from '../../config/constants';
+import { DISPUTE_TYPES, DISPUTE_TYPE_LABELS, DISPUTE_TYPE_DESCRIPTIONS, API_ENDPOINTS } from '../../config/constants';
 
 export default function DisputeModal({ visible, order, products, onClose, onSuccess }) {
   const { paperTheme } = useTheme();
@@ -81,7 +81,7 @@ export default function DisputeModal({ visible, order, products, onClose, onSucc
 
     setSubmitting(true);
 
-    const result = await apiService.post('/api/dispute', {
+    const result = await apiService.post(API_ENDPOINTS.DISPUTE.CREATE, {
       order_id: order.order_id,
       items: items.map(item => ({
         product_id: item.product_id,

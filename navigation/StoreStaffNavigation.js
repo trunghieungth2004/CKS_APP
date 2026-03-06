@@ -39,7 +39,7 @@ export const StoreStaffNavigation = ({
         <MyOrdersScreen 
           onNavigate={onNavigate} 
           initialStatus={ordersInitialStatus} 
-          onStatusChange={() => onStatusChange(null)} 
+          onStatusChange={onStatusChange}
           onRefreshStoreInfo={onRefreshStoreInfo}
         />
       );
@@ -56,7 +56,7 @@ export const StoreStaffNavigation = ({
         <MyOrdersScreen 
           onNavigate={onNavigate} 
           initialStatus={ordersInitialStatus} 
-          onStatusChange={() => onStatusChange(null)} 
+          onStatusChange={onStatusChange}
           onRefreshStoreInfo={onRefreshStoreInfo}
         />
       );

@@ -1,37 +1,40 @@
 import React from 'react';
 import {
-  RawMaterialQCScreen,
-  RawBatchDetailScreen,
-  CKInventoryScreen,
-  CKOrdersScreen,
-  CKOrderDetailScreen,
+  CookedBatchQCScreen,
+  CookedBatchDetailScreen,
+  SupplyStaffOrdersScreen,
+  SupplyOrderDetailScreen,
   SettingsScreen,
 } from '../screens';
 
-export const CKStaffNavigation = ({ 
+export const SupplyStaffNavigation = ({ 
   currentTab,
   currentScreen,
   screenParams,
   ordersInitialStatus,
+  qcInitialTab,
   user,
   onNavigate,
   onBack,
   onStatusChange,
+  onQcTabChange,
   onLogout,
 }) => {
   // Handle special screens outside tab navigation
-  if (currentScreen === 'RawBatchDetail' && screenParams.batchId) {
+  if (currentScreen === 'CookedBatchDetail' && screenParams.batchId) {
     return (
-      <RawBatchDetailScreen 
+      <CookedBatchDetailScreen 
         batchId={screenParams.batchId} 
-        onBack={onBack} 
+        onBack={onBack}
+        onNavigate={onNavigate}
       />
     );
   }
 
-  if (currentScreen === 'CKOrderDetail' && screenParams.orderId) {
+  // Handle both 'CKOrderDetail' and 'SupplyOrderDetail' for compatibility
+  if ((currentScreen === 'SupplyOrderDetail' || currentScreen === 'CKOrderDetail') && screenParams.orderId) {
     return (
-      <CKOrderDetailScreen 
+      <SupplyOrderDetailScreen 
         orderId={screenParams.orderId} 
         onBack={onBack}
         onNavigate={onNavigate}
@@ -45,27 +48,38 @@ export const CKStaffNavigation = ({
 
   switch (currentTab) {
     case 'qc':
-      return <RawMaterialQCScreen onBack={null} onNavigate={onNavigate} />;
+      return (
+        <CookedBatchQCScreen 
+          onBack={null} 
+          onNavigate={onNavigate}
+          initialTab={qcInitialTab}
+          onTabChange={onQcTabChange}
+        />
+      );
     case 'orders':
       return (
-        <CKOrdersScreen 
+        <SupplyStaffOrdersScreen 
           onNavigate={onNavigate}
           initialStatus={ordersInitialStatus}
           onStatusChange={() => onStatusChange(null)}
         />
       );
-    case 'inventory':
-      return <CKInventoryScreen onBack={null} />;
     case 'settings':
       return <SettingsScreen user={user} storeInfo={null} onLogout={onLogout} />;
     default:
-      return <RawMaterialQCScreen onBack={null} onNavigate={onNavigate} />;
+      return (
+        <CookedBatchQCScreen 
+          onBack={null} 
+          onNavigate={onNavigate}
+          initialTab={qcInitialTab}
+          onTabChange={onQcTabChange}
+        />
+      );
   }
 };
 
-export const CK_STAFF_TABS = [
+export const SUPPLY_STAFF_TABS = [
   { key: 'qc', title: 'QC', icon: 'clipboard-check' },
   { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
-  { key: 'inventory', title: 'Inventory', icon: 'package-variant' },
   { key: 'settings', title: 'Settings', icon: 'cog' },
 ];

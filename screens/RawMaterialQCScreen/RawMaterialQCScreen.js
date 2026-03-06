@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Appbar, ActivityIndicator, Surface, Button, Snackbar, Divider, Chip } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
 import CustomDialog from '../../components/CustomDialog';
+const { API_ENDPOINTS } = require('../../config/constants');
+import { formatDate } from '../../utils/validators';
 
-export default function RawMaterialQCScreen({ onBack }) {
+const QC_TABS = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'PASSED', label: 'Passed Today' },
+];
+
+export default function RawMaterialQCScreen({ onBack, onNavigate }) {
   const { paperTheme } = useTheme();
+  const [selectedTab, setSelectedTab] = useState('PENDING');
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -16,12 +24,21 @@ export default function RawMaterialQCScreen({ onBack }) {
   const [qcDialog, setQcDialog] = useState({ visible: false, batchId: null, result: null });
   const [notes, setNotes] = useState('');
 
+  const isPending = selectedTab === 'PENDING';
+  const isPassed = selectedTab === 'PASSED';
+
   useEffect(() => {
-    loadPendingBatches();
-  }, []);
+    setBatches([]);
+    setLoading(true);
+    if (isPending) {
+      loadPendingBatches();
+    } else if (isPassed) {
+      loadPassedBatches();
+    }
+  }, [selectedTab]);
 
   const loadPendingBatches = async () => {
-    const result = await apiService.get('/api/raw-qc/pending');
+    const result = await apiService.get(API_ENDPOINTS.RAW_QC.PENDING);
     setLoading(false);
     setRefreshing(false);
 
@@ -34,7 +51,28 @@ export default function RawMaterialQCScreen({ onBack }) {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadPendingBatches();
+    if (isPending) {
+      loadPendingBatches();
+    } else if (isPassed) {
+      loadPassedBatches();
+    }
+  };
+
+  const loadPassedBatches = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const result = await apiService.post(API_ENDPOINTS.RAW_BATCH.ALL, {
+      qc_status: 'PASS',
+      batch_date: today
+    });
+
+    setLoading(false);
+    setRefreshing(false);
+
+    if (result.success && result.data.data) {
+      setBatches(result.data.data);
+    } else {
+      setSnackbar({ visible: true, message: 'Failed to load passed batches', type: 'error' });
+    }
   };
 
   const showQCDialog = (batchId, result) => {
@@ -58,7 +96,7 @@ export default function RawMaterialQCScreen({ onBack }) {
       notes: notes || (result === 'PASS' ? 'Quality check passed' : 'Quality check failed'),
     };
 
-    const response = await apiService.post('/api/raw-qc/perform', payload);
+    const response = await apiService.post(API_ENDPOINTS.RAW_QC.PERFORM, payload);
     setProcessing(null);
 
     if (response.success) {
@@ -74,6 +112,12 @@ export default function RawMaterialQCScreen({ onBack }) {
         message: response.message || 'QC operation failed', 
         type: 'error' 
       });
+    }
+  };
+
+  const handleBatchPress = (batchId) => {
+    if (onNavigate) {
+      onNavigate('RawBatchDetail', { batchId });
     }
   };
 
@@ -98,6 +142,25 @@ export default function RawMaterialQCScreen({ onBack }) {
         <Appbar.Content title="Raw Material QC" titleStyle={{ fontWeight: 'bold' }} />
       </Appbar.Header>
 
+      <View style={[styles.tabContainer, { borderBottomColor: paperTheme.colors.outlineVariant }]}>
+        {QC_TABS.map((tab) => (
+          <Chip
+            key={tab.value}
+            mode={selectedTab === tab.value ? 'flat' : 'outlined'}
+            selected={selectedTab === tab.value}
+            onPress={() => setSelectedTab(tab.value)}
+            disabled={loading}
+            style={[
+              styles.tabChip,
+              selectedTab === tab.value && { backgroundColor: paperTheme.colors.primaryContainer }
+            ]}
+            textStyle={selectedTab === tab.value && { color: paperTheme.colors.onPrimaryContainer }}
+          >
+            {tab.label}
+          </Chip>
+        ))}
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -112,84 +175,98 @@ export default function RawMaterialQCScreen({ onBack }) {
         ) : batches.length === 0 ? (
           <View style={styles.centerContent}>
             <Text variant="bodyLarge" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-              No pending QC batches
+              {isPending ? 'No pending QC batches' : 'No passed batches for today'}
             </Text>
           </View>
         ) : (
           batches.map((batch) => (
-            <Surface key={batch.batch_id} style={styles.batchCard} elevation={1}>
-              <View style={styles.cardHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
-                    {batch.batch_id}
+            <TouchableOpacity
+              key={batch.batch_id}
+              onPress={() => handleBatchPress(batch.batch_id)}
+              activeOpacity={0.7}
+            >
+              <Surface style={styles.batchCard} elevation={1}>
+                <View style={styles.cardHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
+                      {batch.batch_id}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant, marginTop: 2 }}>
+                      {formatDate(batch.received_date || batch.created_at || batch.batch_date)}
+                    </Text>
+                  </View>
+                  <Chip
+                    mode="flat"
+                    compact
+                    style={{ backgroundColor: isPassed ? '#34C759' : paperTheme.colors.tertiaryContainer }}
+                    textStyle={{ color: isPassed ? '#FFFFFF' : paperTheme.colors.onTertiaryContainer, fontSize: 11, fontWeight: '600' }}
+                  >
+                    {isPassed ? 'PASS' : 'PENDING'}
+                  </Chip>
+                </View>
+
+                <Divider style={{ marginVertical: 12 }} />
+
+                <View style={styles.infoRow}>
+                  <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                    Material
                   </Text>
-                  <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant, marginTop: 2 }}>
-                    {formatDate(batch.received_date || batch.created_at)}
+                  <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
+                    {batch.material_name || 'N/A'}
                   </Text>
                 </View>
-                <Chip
-                  mode="flat"
-                  compact
-                  style={{ backgroundColor: paperTheme.colors.tertiaryContainer }}
-                  textStyle={{ color: paperTheme.colors.onTertiaryContainer, fontSize: 11, fontWeight: '600' }}
-                >
-                  PENDING
-                </Chip>
-              </View>
 
-              <Divider style={{ marginVertical: 12 }} />
+                <View style={styles.infoRow}>
+                  <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                    Quantity
+                  </Text>
+                  <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
+                    {batch.quantity || 0} kg
+                  </Text>
+                </View>
 
-              <View style={styles.infoRow}>
-                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                  Material
-                </Text>
-                <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                  {batch.material_name || 'N/A'}
-                </Text>
-              </View>
+                <View style={styles.infoRow}>
+                  <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                    Supplier
+                  </Text>
+                  <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
+                    {batch.supplier_name || 'N/A'}
+                  </Text>
+                </View>
 
-              <View style={styles.infoRow}>
-                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                  Quantity
-                </Text>
-                <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                  {batch.quantity || 0} kg
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                  Supplier
-                </Text>
-                <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                  {batch.supplier_name || 'N/A'}
-                </Text>
-              </View>
-
-              <View style={styles.buttonRow}>
-                <Button
-                  mode="contained"
-                  onPress={() => showQCDialog(batch.batch_id, 'PASS')}
-                  disabled={processing === batch.batch_id}
-                  loading={processing === batch.batch_id && qcDialog.result === 'PASS'}
-                  style={styles.actionButton}
-                  contentStyle={{ paddingVertical: 4 }}
-                >
-                  PASS
-                </Button>
-                <Button
-                  mode="outlined"
-                  onPress={() => showQCDialog(batch.batch_id, 'FAIL')}
-                  disabled={processing === batch.batch_id}
-                  loading={processing === batch.batch_id && qcDialog.result === 'FAIL'}
-                  style={[styles.actionButton, { borderColor: paperTheme.colors.error }]}
-                  textColor={paperTheme.colors.error}
-                  contentStyle={{ paddingVertical: 4 }}
-                >
-                  FAIL
-                </Button>
-              </View>
-            </Surface>
+                {isPending && (
+                  <View style={styles.buttonRow}>
+                    <Button
+                      mode="contained"
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        showQCDialog(batch.batch_id, 'PASS');
+                      }}
+                      disabled={processing === batch.batch_id}
+                      loading={processing === batch.batch_id && qcDialog.result === 'PASS'}
+                      style={styles.actionButton}
+                      contentStyle={{ paddingVertical: 4 }}
+                    >
+                      PASS
+                    </Button>
+                    <Button
+                      mode="outlined"
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        showQCDialog(batch.batch_id, 'FAIL');
+                      }}
+                      disabled={processing === batch.batch_id}
+                      loading={processing === batch.batch_id && qcDialog.result === 'FAIL'}
+                      style={[styles.actionButton, { borderColor: paperTheme.colors.error }]}
+                      textColor={paperTheme.colors.error}
+                      contentStyle={{ paddingVertical: 4 }}
+                    >
+                      FAIL
+                    </Button>
+                  </View>
+                )}
+              </Surface>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
@@ -241,6 +318,16 @@ export default function RawMaterialQCScreen({ onBack }) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    gap: 8,
+  },
+  tabChip: {
     flex: 1,
   },
   scrollContent: {

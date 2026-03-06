@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { CustomDialog } from '../../components';
 import apiService from '../../services/apiService';
 import { formatDate } from '../../utils/validators';
-import { DISPUTE_WINDOW_HOURS } from '../../config/constants';
+import { DISPUTE_WINDOW_HOURS, API_ENDPOINTS } from '../../config/constants';
 import DisputeModal from '../OrderDetailScreen/DisputeModal';
 
 const STATUS_TABS = [
@@ -44,6 +44,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState(null);
   const [disputeOrder, setDisputeOrder] = useState(null);
   const [dialog, setDialog] = useState({ visible: false, title: '', message: '', type: 'info', onConfirm: null, showCancel: false });
 
@@ -56,14 +57,17 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
   useEffect(() => {
     if (initialStatus && initialStatus !== selectedStatus) {
       setSelectedStatus(initialStatus);
-      if (onStatusChange) {
-        onStatusChange();
-      }
     }
   }, [initialStatus]);
 
+  useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(selectedStatus);
+    }
+  }, [selectedStatus]);
+
   const loadOrders = async () => {
-    const result = await apiService.post('/api/order/my-orders', {
+    const result = await apiService.post(API_ENDPOINTS.ORDER.MY_ORDERS, {
       order_status_id: selectedStatus
     });
 
@@ -77,7 +81,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
       
       const productMap = {};
       for (const productId of allProductIds) {
-        const result = await apiService.post('/api/product/one', { productId });
+        const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId });
         if (result.success && result.data.data) {
           productMap[productId] = result.data.data;
         }
@@ -122,16 +126,15 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
       return false;
     }
 
-    if (!order.history || order.history.length === 0) return false;
-    
-    const deliveryHistory = order.history.find(h => h.to_status_id === 'OR104');
-    if (!deliveryHistory) return false;
-
-    const deliveryTime = new Date(deliveryHistory.changed_at);
+    const deliveryTime = new Date(order.updated_at || order.created_at);
     const now = new Date();
     const hoursSinceDelivery = (now - deliveryTime) / (1000 * 60 * 60);
     
     return hoursSinceDelivery <= DISPUTE_WINDOW_HOURS;
+  };
+
+  const canConfirmDelivery = (order) => {
+    return order && order.order_status_id === 'OR103';
   };
 
   const handleCancelOrder = (order) => {
@@ -150,7 +153,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
     setDialog({ ...dialog, visible: false });
     setCancellingOrderId(orderId);
     
-    const result = await apiService.post('/api/order/update-status', { 
+    const result = await apiService.post(API_ENDPOINTS.ORDER.UPDATE_STATUS, { 
       order_id: orderId,
       order_status_id: "OR105"
     });
@@ -182,6 +185,49 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
 
   const handleDisputeSuccess = () => {
     loadOrders();
+  };
+
+  const handleConfirmDelivery = (order) => {
+    setDialog({
+      visible: true,
+      title: 'Confirm Delivery',
+      message: 'Have you received this order? Confirming delivery will mark the order as complete.',
+      type: 'confirm',
+      onConfirm: () => confirmDelivery(order.order_id),
+      showCancel: true,
+      confirmText: 'Yes, Received',
+    });
+  };
+
+  const confirmDelivery = async (orderId) => {
+    setDialog({ ...dialog, visible: false });
+    setConfirmingOrderId(orderId);
+    
+    const result = await apiService.post(API_ENDPOINTS.ORDER.UPDATE_STATUS, { 
+      order_id: orderId,
+      order_status_id: 'OR104'
+    });
+    
+    setConfirmingOrderId(null);
+    
+    if (result.success) {
+      if (onRefreshStoreInfo) {
+        await onRefreshStoreInfo();
+      }
+      setDialog({
+        visible: true,
+        title: 'Delivery Confirmed',
+        message: 'Order has been marked as delivered successfully.',
+        type: 'success',
+        onConfirm: () => {
+          setDialog({ ...dialog, visible: false });
+          setSelectedStatus('OR104');
+        },
+        showCancel: false,
+      });
+    } else {
+      setDialog({ visible: true, title: 'Error', message: result.message || 'Failed to confirm delivery', type: 'error', onConfirm: () => setDialog({ ...dialog, visible: false }), showCancel: false });
+    }
   };
 
   const calculateOrderTotal = (order) => {
@@ -286,19 +332,24 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
                   </Text>
                 </View>
 
-                {(canCancelOrder(order) || canFileDispute(order)) && (
+                {(canCancelOrder(order) || canFileDispute(order) || canConfirmDelivery(order)) && (
                   <View style={styles.orderActions}>
-                    {canFileDispute(order) ? (
-                      <IconButton
-                        icon="alert-circle"
-                        size={24}
+                    {canConfirmDelivery(order) ? (
+                      <PaperButton
                         mode="contained"
-                        containerColor={paperTheme.colors.error}
-                        iconColor={paperTheme.colors.onError}
-                        onPress={(e) => handleFileDispute(order, e)}
-                        style={styles.actionIcon}
-                      />
-                    ) : (
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleConfirmDelivery(order);
+                        }}
+                        loading={confirmingOrderId === order.order_id}
+                        disabled={confirmingOrderId === order.order_id}
+                        style={styles.actionButton}
+                        labelStyle={{ fontSize: 13, fontWeight: '600' }}
+                        icon="check"
+                      >
+                        CONFIRM DELIVERY
+                      </PaperButton>
+                    ) : canCancelOrder(order) ? (
                       <PaperButton
                         mode="outlined"
                         onPress={(e) => {
@@ -313,7 +364,22 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
                       >
                         CANCEL
                       </PaperButton>
-                    )}
+                    ) : canFileDispute(order) ? (
+                      <PaperButton
+                        mode="contained-tonal"
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleFileDispute(order, e);
+                        }}
+                        buttonColor={paperTheme.colors.errorContainer}
+                        textColor={paperTheme.colors.onErrorContainer}
+                        style={styles.disputeButton}
+                        labelStyle={{ fontSize: 13, fontWeight: '700' }}
+                        icon="alert-circle"
+                      >
+                        FILE DISPUTE
+                      </PaperButton>
+                    ) : null}
                   </View>
                 )}
               </Surface>
@@ -347,7 +413,7 @@ export default function MyOrdersScreen({ onNavigate, initialStatus, onStatusChan
         />
       )}
 
-      {(cancellingOrderId || dialog.visible || disputeOrder) && (
+      {(cancellingOrderId || confirmingOrderId || dialog.visible || disputeOrder) && (
         <View style={styles.backdrop} pointerEvents="auto" />
       )}
     </View>
@@ -415,6 +481,12 @@ const styles = StyleSheet.create({
   actionButton: {
     minHeight: 40,
     paddingHorizontal: 16,
+  },
+  disputeButton: {
+    minHeight: 40,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 0, 0, 0.3)',
   },
   actionIcon: {
     margin: 0,

@@ -47,7 +47,7 @@ class ApiService {
         message: data.message,
       };
     } catch (error) {
-      console.error('API request error:', error);
+      console.error("API request error:", error);
       return {
         success: false,
         message: 'Network error. Please try again.',

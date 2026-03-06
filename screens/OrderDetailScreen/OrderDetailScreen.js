@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { CustomDialog } from '../../components';
 import apiService from '../../services/apiService';
 import { formatDate, formatDateTime } from '../../utils/validators';
-import { DISPUTE_WINDOW_HOURS } from '../../config/constants';
+import { DISPUTE_WINDOW_HOURS, API_ENDPOINTS } from '../../config/constants';
 import DisputeModal from './DisputeModal';
 
 const STATUS_COLORS = {
@@ -33,7 +33,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRe
 
   const loadOrderDetails = async () => {
     setLoading(true);
-    const result = await apiService.post('/api/order/one', { order_id: orderId });
+    const result = await apiService.post(API_ENDPOINTS.ORDER.ONE, { order_id: orderId });
 
     if (result.success && result.data.data) {
       const orderData = result.data.data;
@@ -51,7 +51,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRe
   const loadProductDetails = async (productIds) => {
     const productMap = {};
     for (const productId of productIds) {
-      const result = await apiService.post('/api/product/one', { productId: productId });
+      const result = await apiService.post(API_ENDPOINTS.PRODUCT.ONE, { productId: productId });
       if (result.success && result.data.data) {
         productMap[productId] = result.data.data;
       }
@@ -90,7 +90,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRe
     setDialog({ ...dialog, visible: false });
     setCancelling(true);
     
-    const result = await apiService.post('/api/order/update-status', { 
+    const result = await apiService.post(API_ENDPOINTS.ORDER.UPDATE_STATUS, { 
       order_id: orderId,
       order_status_id: "OR105"
     });
@@ -124,12 +124,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRe
       return false;
     }
 
-    if (!order.history || order.history.length === 0) return false;
-    
-    const deliveryHistory = order.history.find(h => h.to_status_id === 'OR104');
-    if (!deliveryHistory) return false;
-
-    const deliveryTime = new Date(deliveryHistory.changed_at);
+    const deliveryTime = new Date(order.updated_at || order.created_at);
     const now = new Date();
     const hoursSinceDelivery = (now - deliveryTime) / (1000 * 60 * 60);
     
@@ -258,14 +253,15 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRe
               <Divider style={styles.divider} />
               <View style={styles.section}>
                 <PaperButton
-                  mode="contained"
+                  mode="contained-tonal"
                   onPress={handleFileDispute}
-                  buttonColor={paperTheme.colors.error}
-                  textColor={paperTheme.colors.onError}
+                  buttonColor={paperTheme.colors.errorContainer}
+                  textColor={paperTheme.colors.onErrorContainer}
                   icon="alert-circle"
-                  style={styles.cancelButton}
+                  style={styles.disputeButton}
+                  labelStyle={{ fontWeight: '700' }}
                 >
-                  File Dispute
+                  FILE DISPUTE
                 </PaperButton>
                 <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant, marginTop: 8, textAlign: 'center' }}>
                   Disputes must be filed within 1 hour of delivery
@@ -474,6 +470,11 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     marginVertical: 8,
+  },
+  disputeButton: {
+    marginVertical: 8,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 0, 0, 0.3)',
   },
   itemCard: {
     backgroundColor: 'transparent',

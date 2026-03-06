@@ -15,6 +15,7 @@ export default function CustomDialog({
   showCancel = false,
   showInput = false,
   inputProps = {},
+  customActions = null,
 }) {
   const { paperTheme } = useTheme();
 
@@ -69,18 +70,22 @@ export default function CustomDialog({
           )}
         </Dialog.Content>
         <Dialog.Actions>
-          {showCancel && (
-            <Button onPress={onDismiss} textColor={paperTheme.colors.onSurfaceVariant}>
-              {cancelText}
-            </Button>
+          {customActions || (
+            <>
+              {showCancel && (
+                <Button onPress={onDismiss} textColor={paperTheme.colors.onSurfaceVariant}>
+                  {cancelText}
+                </Button>
+              )}
+              <Button 
+                onPress={onConfirm || onDismiss}
+                mode={type === 'error' || type === 'confirm' ? 'contained' : 'text'}
+                buttonColor={type === 'error' ? paperTheme.colors.error : undefined}
+              >
+                {confirmText}
+              </Button>
+            </>
           )}
-          <Button 
-            onPress={onConfirm || onDismiss}
-            mode={type === 'error' || type === 'confirm' ? 'contained' : 'text'}
-            buttonColor={type === 'error' ? paperTheme.colors.error : undefined}
-          >
-            {confirmText}
-          </Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

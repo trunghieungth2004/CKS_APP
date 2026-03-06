@@ -3,13 +3,13 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ScrollView,
   StyleSheet,
 } from 'react-native';
 import { Text, Surface, Divider, TextInput } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
+import { CustomDialog } from '../../components';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import authService from '../../services/authService';
@@ -21,6 +21,7 @@ export default function LoginScreen({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [dialog, setDialog] = useState({ visible: false, title: '', message: '', type: 'error' });
 
   if (!paperTheme || !paperTheme.colors) {
     return null;
@@ -62,7 +63,12 @@ export default function LoginScreen({ onLoginSuccess }) {
         onLoginSuccess(result.data);
       }
     } else {
-      Alert.alert('Login Failed', result.message);
+      setDialog({
+        visible: true,
+        title: 'Login Failed',
+        message: result.message,
+        type: 'error',
+      });
     }
   };
 
@@ -152,11 +158,23 @@ export default function LoginScreen({ onLoginSuccess }) {
 
           <View style={styles.versionInfo}>
             <Text variant="labelSmall" style={{ color: paperTheme.colors.outline }}>
-              Version 1.0.0 • Material Design
+              Version 1.0.0 
             </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <CustomDialog
+        visible={dialog.visible}
+        title={dialog.title}
+        message={dialog.message}
+        type={dialog.type}
+        onDismiss={() => setDialog({ ...dialog, visible: false })}
+      />
+
+      {dialog.visible && (
+        <View style={styles.backdrop} pointerEvents="none" />
+      )}
     </View>
   );
 }
@@ -228,5 +246,14 @@ const styles = StyleSheet.create({
   versionInfo: {
     alignItems: 'center',
     paddingVertical: 20,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
   },
 });

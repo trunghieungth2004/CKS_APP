@@ -6,3 +6,4 @@ export { default as BottomNavigation } from './BottomNavigation/BottomNavigation
 export { default as Icon } from './Icon/Icon';
 export { default as Snackbar } from './Snackbar/Snackbar';
 export { default as CustomDialog } from './CustomDialog';
+export { default as RiskPoolModal } from './RiskPoolModal/RiskPoolModal';
