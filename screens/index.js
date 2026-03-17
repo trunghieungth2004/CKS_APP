@@ -29,3 +29,4 @@ export { default as ManagerOrdersScreen } from './ManagerOrdersScreen/ManagerOrd
 export { default as ManagerReportsScreen } from './ManagerReportsScreen/ManagerReportsScreen';
 export { default as SettingsScreen } from './SettingsScreen/SettingsScreen';
 export { default as StoreInventoryScreen } from './StoreInventoryScreen/StoreInventoryScreen';
+export { default as UserManagementScreen } from './UserManagementScreen/UserManagementScreen';
