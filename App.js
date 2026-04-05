@@ -4,7 +4,7 @@ import { PaperProvider, Text, Surface, Appbar, ActivityIndicator } from 'react-n
 import { LoginScreen, DashboardScreen, SettingsScreen} from './screens';
 import { BottomNavigation, Snackbar } from './components';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { StoreStaffNavigation, STORE_STAFF_TABS, CKStaffNavigation, CK_STAFF_TABS, SupplyStaffNavigation, SUPPLY_STAFF_TABS, ManagerNavigation, MANAGER_TABS } from './navigation';
+import { StoreStaffNavigation, STORE_STAFF_TABS, CKStaffNavigation, CK_STAFF_TABS, SupplyStaffNavigation, SUPPLY_STAFF_TABS, ManagerNavigation, MANAGER_TABS,  AdminNavigation, ADMIN_TABS } from './navigation';
 import apiService from './services/apiService';
 import storage from './utils/storage';
 import { API_ENDPOINTS } from './config/constants';
@@ -250,6 +250,20 @@ function AppContent() {
   }
 
   const renderCurrentTab = () => {
+    if (user.role_id === 0) {
+  return (
+    <AdminNavigation
+      currentTab={currentTab}
+      currentScreen={currentScreen}
+      screenParams={screenParams}
+      user={user}
+      onNavigate={handleNavigate}
+      onBack={handleBack}
+      onLogout={handleLogout}
+    />
+  );
+}
+
     if (user.role_id === 4) {
       return (
         <StoreStaffNavigation
@@ -332,6 +346,7 @@ function AppContent() {
     if (user.role_id === 1) return CK_STAFF_TABS;
     if (user.role_id === 2) return SUPPLY_STAFF_TABS;
     if (user.role_id === 3) return MANAGER_TABS;
+    if (user.role_id === 0) return ADMIN_TABS;
     return [{ key: 'settings', title: 'Settings', icon: 'cog' }];
   };
 
