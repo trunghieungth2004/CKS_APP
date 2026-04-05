@@ -11,6 +11,7 @@ import {
   ManagerOrdersScreen,
   OrderDetailScreen,
   DisputesScreen,
+  InventoryManagementScreen,
   SettingsScreen,
 } from '../screens';
 
@@ -124,6 +125,8 @@ export const ManagerNavigation = ({
       return <DisputesScreen onNavigate={onNavigate} />;
     case 'recipes':
       return <RecipesManagementScreen onNavigate={onNavigate} />;
+    case 'inventory':
+      return <InventoryManagementScreen onNavigate={onNavigate} />;
     case 'settings':
       return <SettingsScreen user={user} storeInfo={null} onLogout={onLogout} />;
     default:
@@ -136,5 +139,6 @@ export const MANAGER_TABS = [
   { key: 'orders', title: 'Orders', icon: 'clipboard-list' },
   { key: 'disputes', title: 'Disputes', icon: 'alert-circle' },
   { key: 'recipes', title: 'Recipes', icon: 'food-variant' },
+  { key: 'inventory', title: 'Inventory', icon: 'warehouse' },
   { key: 'settings', title: 'Settings', icon: 'cog' },
 ];

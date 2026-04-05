@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
-import { Text, Appbar, ActivityIndicator, Surface, Chip, Searchbar, Divider } from 'react-native-paper';
+import { Text, Appbar, ActivityIndicator, Surface, Chip, Searchbar } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/ThemeContext';
 import apiService from '../../services/apiService';
 import { API_ENDPOINTS } from '../../config/constants';
+import { formatDateTime } from '../../utils/validators';
 
 export default function CKInventoryScreen({ onBack }) {
   const { paperTheme } = useTheme();
   const [inventory, setInventory] = useState([]);
+  const [materials, setMaterials] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,15 +21,23 @@ export default function CKInventoryScreen({ onBack }) {
 
   const loadInventory = async () => {
     setLoading(true);
-    const result = await apiService.post(API_ENDPOINTS.INVENTORY.CK);
+    const [invResult, matResult] = await Promise.all([
+      apiService.post(API_ENDPOINTS.INVENTORY.CK, {}),
+      apiService.get(API_ENDPOINTS.RAW_MATERIAL.ALL),
+    ]);
     setLoading(false);
     setRefreshing(false);
 
-    if (result.success && result.data.data && result.data.data.inventory) {
-      setInventory(result.data.data.inventory);
-    } else {
-      console.error('Failed to load inventory:', result.message);
-      setInventory([]);
+    if (invResult.success && invResult.data.data?.inventory) {
+      setInventory(invResult.data.data.inventory);
+    }
+
+    if (matResult.success && matResult.data.data) {
+      const matMap = {};
+      matResult.data.data.forEach(mat => {
+        matMap[mat.material_id] = mat;
+      });
+      setMaterials(matMap);
     }
   };
 
@@ -37,18 +47,36 @@ export default function CKInventoryScreen({ onBack }) {
   };
 
   const filteredInventory = inventory.filter(item => {
+    const material = materials[item.material_id];
+    const materialName = material?.material_name || '';
     const materialId = item.material_id || '';
-    return materialId.toLowerCase().includes(searchQuery.toLowerCase());
+    const inventoryId = item.inventory_id || '';
+    const query = searchQuery.toLowerCase();
+    return materialName.toLowerCase().includes(query) || 
+           materialId.toLowerCase().includes(query) ||
+           inventoryId.toLowerCase().includes(query);
   });
 
   const getStatusColor = (status) => {
-    if (status === 'RAW') return paperTheme.colors.tertiaryContainer;
-    return paperTheme.colors.surfaceVariant;
+    switch (status) {
+      case 'RAW':
+        return paperTheme.colors.primaryContainer;
+      case 'COOKED':
+        return paperTheme.colors.secondaryContainer;
+      default:
+        return paperTheme.colors.surfaceVariant;
+    }
   };
 
   const getStatusTextColor = (status) => {
-    if (status === 'RAW') return paperTheme.colors.onTertiaryContainer;
-    return paperTheme.colors.onSurfaceVariant;
+    switch (status) {
+      case 'RAW':
+        return paperTheme.colors.onPrimaryContainer;
+      case 'COOKED':
+        return paperTheme.colors.onSecondaryContainer;
+      default:
+        return paperTheme.colors.onSurfaceVariant;
+    }
   };
 
   return (
@@ -61,7 +89,7 @@ export default function CKInventoryScreen({ onBack }) {
       </Appbar.Header>
 
       <Searchbar
-        placeholder="Search by material ID..."
+        placeholder="Search materials..."
         onChangeText={setSearchQuery}
         value={searchQuery}
         style={styles.searchbar}
@@ -89,49 +117,60 @@ export default function CKInventoryScreen({ onBack }) {
             </Text>
           </View>
         ) : (
-          filteredInventory.map((item) => (
-            <Surface key={item.inventory_id} style={styles.inventoryCard} elevation={1}>
-              <View style={styles.cardHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
-                    {item.material_id}
-                  </Text>
+          filteredInventory.map((item) => {
+            const material = materials[item.material_id];
+            return (
+              <Surface key={item.inventory_id} style={styles.inventoryCard} elevation={1}>
+                <View style={styles.inventoryHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>
+                      {material?.material_name || item.material_id}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant, marginTop: 2 }}>
+                      ID: {item.inventory_id}
+                    </Text>
+                  </View>
+                  <Chip
+                    mode="flat"
+                    compact
+                    style={{ backgroundColor: getStatusColor(item.status) }}
+                    textStyle={{ color: getStatusTextColor(item.status), fontSize: 11, fontWeight: '600' }}
+                  >
+                    {item.status}
+                  </Chip>
                 </View>
-                <Chip
-                  mode="flat"
-                  compact
-                  style={{ backgroundColor: getStatusColor(item.status) }}
-                  textStyle={{ color: getStatusTextColor(item.status), fontSize: 11, fontWeight: '600' }}
-                >
-                  {item.status}
-                </Chip>
-              </View>
 
-              <Divider style={{ marginVertical: 12 }} />
+                <View style={styles.inventoryDetails}>
+                  <View style={styles.inventoryDetailRow}>
+                    <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                      Quantity:
+                    </Text>
+                    <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
+                      {Number(item.quantity).toFixed(2)} {item.unit}
+                    </Text>
+                  </View>
 
-              <View style={styles.infoRow}>
-                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                  Quantity
-                </Text>
-                <Text variant="bodyMedium" style={{ fontWeight: '600' }}>
-                  {item.quantity.toFixed(2)} {item.unit}
-                </Text>
-              </View>
+                  <View style={styles.inventoryDetailRow}>
+                    <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                      Last Updated:
+                    </Text>
+                    <Text variant="bodySmall" style={{ fontWeight: '600' }}>
+                      {formatDateTime(item.last_updated)}
+                    </Text>
+                  </View>
 
-              <View style={styles.infoRow}>
-                <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                  Last Updated
-                </Text>
-                <Text variant="bodySmall" style={{ color: paperTheme.colors.onSurfaceVariant }}>
-                  {new Date(item.last_updated).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </Text>
-              </View>
-            </Surface>
-          ))
+                  <View style={styles.inventoryDetailRow}>
+                    <Text variant="bodyMedium" style={{ color: paperTheme.colors.onSurfaceVariant }}>
+                      Created:
+                    </Text>
+                    <Text variant="bodySmall">
+                      {formatDateTime(item.created_at)}
+                    </Text>
+                  </View>
+                </View>
+              </Surface>
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -159,19 +198,22 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   inventoryCard: {
+    padding: 16,
     marginBottom: 12,
     borderRadius: 12,
-    padding: 16,
   },
-  cardHeader: {
+  inventoryHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    marginBottom: 12,
   },
-  infoRow: {
+  inventoryDetails: {
+    gap: 8,
+  },
+  inventoryDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
 });

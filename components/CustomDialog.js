@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Dialog, Portal, Button, Text, TextInput } from 'react-native-paper';
 import { useTheme } from '../context/ThemeContext';
 
@@ -69,24 +69,26 @@ export default function CustomDialog({
             />
           )}
         </Dialog.Content>
-        <Dialog.Actions>
-          {customActions || (
-            <>
-              {showCancel && (
-                <Button onPress={onDismiss} textColor={paperTheme.colors.onSurfaceVariant}>
-                  {cancelText}
-                </Button>
-              )}
-              <Button 
-                onPress={onConfirm || onDismiss}
-                mode={type === 'error' || type === 'confirm' ? 'contained' : 'text'}
-                buttonColor={type === 'error' ? paperTheme.colors.error : undefined}
-              >
-                {confirmText}
+        {customActions ? (
+          <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 24, paddingBottom: 24 }}>
+            {customActions}
+          </View>
+        ) : (
+          <Dialog.Actions>
+            {showCancel && (
+              <Button onPress={onDismiss} textColor={paperTheme.colors.onSurfaceVariant}>
+                {cancelText}
               </Button>
-            </>
-          )}
-        </Dialog.Actions>
+            )}
+            <Button 
+              onPress={onConfirm || onDismiss}
+              mode={type === 'error' || type === 'confirm' ? 'contained' : 'text'}
+              buttonColor={type === 'error' ? paperTheme.colors.error : undefined}
+            >
+              {confirmText}
+            </Button>
+          </Dialog.Actions>
+        )}
       </Dialog>
     </Portal>
   );

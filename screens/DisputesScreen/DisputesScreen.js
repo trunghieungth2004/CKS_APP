@@ -239,7 +239,7 @@ export default function DisputesScreen({ onNavigate }) {
           multiline: true,
         }}
         customActions={
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+          <>
             <Button
               mode="contained"
               onPress={() => handleResolve('APPROVE')}
@@ -258,7 +258,7 @@ export default function DisputesScreen({ onNavigate }) {
             >
               Reject
             </Button>
-          </View>
+          </>
         }
       />
     </View>

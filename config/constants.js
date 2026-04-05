@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
   },
   RAW_MATERIAL: {
     ALL: '/api/raw-material/all',
+    CREATE: '/api/raw-material/create',
   },
   ORDER: {
     CREATE: '/api/order/create',

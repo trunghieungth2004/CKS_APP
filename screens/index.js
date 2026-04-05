@@ -26,6 +26,8 @@ export { default as RecipeDetailScreen } from './RecipeDetailScreen/RecipeDetail
 export { default as EditRecipeScreen } from './EditRecipeScreen/EditRecipeScreen';
 export { default as CreateRecipeScreen } from './CreateRecipeScreen/CreateRecipeScreen';
 export { default as ManagerOrdersScreen } from './ManagerOrdersScreen/ManagerOrdersScreen';
+export { default as InventoryManagementScreen } from './InventoryManagementScreen/InventoryManagementScreen';
+export { default as RawMaterialsScreen } from './RawMaterialsScreen/RawMaterialsScreen';
 export { default as ManagerReportsScreen } from './ManagerReportsScreen/ManagerReportsScreen';
 export { default as SettingsScreen } from './SettingsScreen/SettingsScreen';
 export { default as StoreInventoryScreen } from './StoreInventoryScreen/StoreInventoryScreen';

@@ -358,7 +358,7 @@ export default function OrderDetailScreen({ orderId, onBack, onNavigateTab, onRe
             {order.history.map((entry, index) => (
               <View key={entry.history_id} style={styles.historyEntry}>
                 <View style={styles.historyDot}>
-                  <View style={[styles.dot, { backgroundColor: paperTheme.colors.primary }]} />
+                  <View style={[styles.dot, { backgroundColor: STATUS_COLORS[entry.to_status_id] || paperTheme.colors.primary }]} />
                   {index < order.history.length - 1 && (
                     <View style={[styles.line, { backgroundColor: paperTheme.colors.outlineVariant }]} />
                   )}
